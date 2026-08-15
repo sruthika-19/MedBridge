@@ -1,0 +1,41 @@
+            ID,SYSTEM,TRADITIONAL TERM,NAMASTE CODE,TM2 CODE
+1,Ayurveda,jvara,AYU-101,SP51
+2,Siddha,suram,SID-045,SL41
+3,Unani,humma,UNA-090,SP51
+4,Ayurveda,kasa,AYU-112,SL41
+5,Ayurveda,shwasa,AYU-113,SL42
+6,Siddha,irumal,SID-046,SL41
+7,Unani,su-al,UNA-091,SL41
+8,Ayurveda,hikka,AYU-114,SM74
+9,Ayurveda,pandu,AYU-115,SL80
+10,Siddha,manjal noi,SID-047,SM20
+11,Unani,yarqan,UNA-092,SM20
+12,Ayurveda,aruchi,AYU-116,SM10
+13,Ayurveda,ajirana,AYU-117,SM10
+14,Siddha,mandham,SID-048,SM10
+15,Unani,su-e-hazm,UNA-093,SM10
+16,Ayurveda,atisara,AYU-118,SM30
+17,Siddha,kazhichal,SID-049,SM30
+18,Unani,ishal,UNA-094,SM30
+19,Ayurveda,grahani,AYU-119,SM40
+20,Ayurveda,chardi,AYU-120,SM70
+21,Siddha,vanti,SID-050,SM70
+22,Unani,qai,UNA-095,SM70
+23,Ayurveda,mutraghata,AYU-121,SM80
+24,Siddha,neerizhivu,SID-051,SN10
+25,Unani,zayabetus,UNA-096,SN10
+26,Ayurveda,prameha,AYU-122,SN10
+27,Ayurveda,sandhigata vata,AYU-123,SP12
+28,Siddha,azhal keel vayu,SID-052,SP12
+29,Unani,waja-ul-mafasil,UNA-097,SP12
+30,Ayurveda,gridhrasi,AYU-124,SP20
+31,Ayurveda,ardita,AYU-125,SP20
+32,Siddha,ajal kirkrippu,SID-053,SK00
+33,Unani,sadra-o-dwar,UNA-098,SK00
+34,Ayurveda,kandu,AYU-126,SK52
+35,Ayurveda,kampavata,AYU-127,SN40
+36,Siddha,sori,SID-054,SN40
+37,Unani,hikka-e-jild,UNA-099,SN40
+38,Ayurveda,dadru,AYU-128,SN50
+39,Siddha,vellai noi,SID-055,SN60
+40,Unani,bars,UNA-100,SN60
