@@ -33,7 +33,7 @@
 2. **Install backend dependencies:**
    Ensure you have Python 3.8+ installed, then install the required packages:
    ```bash
-   pip install fastapi uvicorn
+   python -m pip install fastapi uvicorn
    ```
 
 3. **Initialize the Database:**
