@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from search_engine import search_disease
 
 # Initialize FastAPI app
 app = FastAPI(title = "MedBridge API")
@@ -18,9 +19,5 @@ def home():
 
 @app.get("/sync/{disease_name}")
 def get_icd_code(disease_name: str):
-    # Varshitha's Search Logic
-
-    return {
-        "traditional_term": disease_name,
-        "icd_11_code": "WAITING FOR VARSHITHA'S LOGIC"
-    }
+    result = search_disease(disease_name)
+    return result
