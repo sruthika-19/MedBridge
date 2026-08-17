@@ -1,0 +1,163 @@
+:root {
+    --bg-base: #050508;
+    --bg-glow: #0f172a; 
+    
+    --accent-cyan: #00e5ff;
+    --accent-blue: #2979ff;
+    
+    --glass-bg: rgba(15, 23, 42, 0.6);
+    --glass-border: rgba(0, 229, 255, 0.15);
+    
+    --text-main: #ffffff;
+    --text-muted: #94a3b8;
+}
+
+body.dark-theme {
+    background-color: var(--bg-base);
+    background-image: radial-gradient(circle at 50% -20%, var(--bg-glow) 0%, var(--bg-base) 70%);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    min-height: 100vh;
+}
+
+.main-container {
+    max-width: 750px;
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #ffffff 0%, var(--accent-cyan) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+    text-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+}
+
+.subtitle-text {
+    color: var(--text-muted);
+    font-size: 1.15rem;
+    letter-spacing: 0.5px;
+}
+
+.glass-panel, .card {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 229, 255, 0.03) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-wrapper {
+    border-radius: 50px;
+    padding: 8px 12px;
+}
+
+.search-wrapper:focus-within {
+    border-color: var(--accent-cyan) !important;
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.25), inset 0 0 15px rgba(0, 229, 255, 0.05) !important;
+    transform: translateY(-2px);
+}
+
+.custom-input {
+    background: transparent !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: none !important;
+    padding-left: 20px;
+    font-size: 1.15rem;
+}
+
+.custom-input::placeholder {
+    color: #64748b !important;
+}
+
+.search-btn {
+    border-radius: 30px;
+    background: linear-gradient(45deg, var(--accent-blue), var(--accent-cyan));
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 229, 255, 0.5);
+    background: linear-gradient(45deg, #1d4ed8, #00b8d4);
+}
+
+.icon-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.card {
+    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpFade {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.text-dark { color: #f1f5f9 !important; }
+.text-muted { color: #94a3b8 !important; }
+
+pre.bg-dark {
+    background-color: #020617 !important;
+    border: 1px solid var(--glass-border);
+    color: #00e5ff !important; 
+    border-radius: 12px;
+}
+
+.badge.bg-success, 
+span[style*="green" i],
+span[style*="#28a745" i] {
+    background: rgba(16, 185, 129, 0.15) !important;
+    border: 1px solid rgba(16, 185, 129, 0.5) !important;
+    color: #34d399 !important;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.2) !important;
+    border-radius: 30px !important;
+    padding: 6px 14px !important;
+}
+
+.badge.bg-warning,
+span[style*="yellow" i],
+span[style*="#ffc107" i] {
+    background: rgba(245, 158, 11, 0.15) !important;
+    border: 1px solid rgba(245, 158, 11, 0.5) !important;
+    color: #fbbf24 !important;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.2) !important;
+    border-radius: 30px !important;
+    padding: 6px 14px !important;
+}
+
+.alert-danger,
+div[style*="darkred" i],
+div[style*="#8b0000" i] {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    color: #f87171 !important;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.15) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(12px) !important;
+    font-weight: 500 !important;
+    padding: 12px 20px !important;
+}
