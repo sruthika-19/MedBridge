@@ -26,7 +26,7 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/sruthika-19/MedBridge](https://github.com/sruthika-19/MedBridge)
+   git clone https://github.com/sruthika-19/MedBridge
    cd MedBridge
    ```
    
