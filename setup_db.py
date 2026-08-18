@@ -17,7 +17,8 @@ def create_database():
                 system TEXT,
                 traditional_term TEXT NOT NULL,
                 namaste_code TEXT,
-                tm2_code TEXT NOT NULL
+                tm2_code TEXT NOT NULL,
+                aliases TEXT
             )
         ''')
 
@@ -28,23 +29,28 @@ def create_database():
             
             for row in reader:
                 if len(row) >= 5: 
+
+                    aliases = row[5].strip() if len(row) >= 6 else ""
+
                     data_to_insert.append((
                         row[1].strip(), 
                         row[2].strip(), 
                         row[3].strip(), 
-                        row[4].strip()
+                        row[4].strip(),
+                        aliases
                     ))
         
-        cursor.executemany('''
-            INSERT INTO icd_mappings (system, traditional_term, namaste_code, tm2_code)
-            VALUES (?, ?, ?, ?)
-        ''', data_to_insert)
+        cursor.executemany("""
+            INSERT INTO icd_mappings
+            (system, traditional_term, namaste_code, tm2_code, aliases)
+            VALUES (?, ?, ?, ?, ?)
+        """, data_to_insert)
 
         conn.commit()
         print(f"Success! {len(data_to_insert)} records cleanly inserted into '{db_filename}'.")
         
     except FileNotFoundError:
-        print(f"Error: Could not find '{csv_filename}'. Please ensure it is in the same folder.")
+        print(f"Error: Could not find '{csv_filename}'. Please ensure it is in the correct folder.")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
     finally:
