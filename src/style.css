@@ -161,3 +161,55 @@ div[style*="#8b0000" i] {
     font-weight: 500 !important;
     padding: 12px 20px !important;
 }
+
+.emr-title {
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.emr-description {
+    color: #94a3b8 !important;
+}
+
+.emr-status {
+    color: #00e5ff !important;
+}
+
+.emr-response {
+    color: #f1f5f9 !important;
+    background: rgba(2, 6, 23, 0.7);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.emr-response strong {
+    color: #ffffff !important;
+}
+
+.success-text {
+    color: #34d399 !important;
+    font-weight: 600;
+}
+
+/* Custom File Upload Styling */
+.file-upload-box {
+    border: 2px dashed rgba(0, 229, 255, 0.4); /* Cyan dashed border */
+    background: rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-upload-box:hover, .file-upload-box.dragover {
+    border-color: #00e5ff; /* Bright cyan on hover */
+    background: rgba(0, 229, 255, 0.05); /* Slight cyan tint */
+    transform: translateY(-2px);
+}
+
+.upload-success-text {
+    color: #00e5ff;
+    background: rgba(0, 229, 255, 0.1);
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+}
