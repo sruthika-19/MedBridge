@@ -1,12 +1,13 @@
+import os
+import csv
+import io
+import datetime
 from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from search_engine import search_disease
 from fastapi import File, UploadFile
-from fastapi.responses import StreamingResponse
-import csv
-import io
-import datetime
+from fastapi.responses import StreamingResponse, PlainTextResponse
 
 app = FastAPI(title = "MedBridge API")
 class MappingRequest(BaseModel):
@@ -91,3 +92,12 @@ async def bulk_map_csv(file: UploadFile = File(...)):
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename=MedBridge_Standardized_{file.filename}"}
     )
+
+@app.get("/api/v1/audit-logs", tags=["Enterprise Features"])
+def get_audit_logs():
+    log_file = "audit_log.txt"
+    if os.path.exists(log_file):
+        with open(log_file, "r") as f:
+            logs = f.read()
+        return PlainTextResponse(logs)
+    return "No audit logs found yet. Perform a search to generate logs."
