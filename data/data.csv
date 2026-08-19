@@ -1,5 +1,5 @@
-            ID,SYSTEM,TRADITIONAL TERM,NAMASTE CODE,TM2 CODE
-1,Ayurveda,jvara,AYU-101,SP51
+            ID,SYSTEM,TRADITIONAL TERM,NAMASTE CODE,TM2 CODE, ALIASES
+1,Ayurveda,jvara,AYU-101,SP51, fever|high temperature
 2,Siddha,suram,SID-045,SL41
 3,Unani,humma,UNA-090,SP51
 4,Ayurveda,kasa,AYU-112,SL41
