@@ -364,3 +364,47 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
+// Password Visibility Eye Toggle (Safely guarded)
+const togglePassword = document.getElementById('togglePassword');
+const passwordInput = document.getElementById('passwordInput');
+
+if (togglePassword && passwordInput) {
+    togglePassword.addEventListener('click', function () {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.textContent = type === 'password' ? '👁️' : '🔒';
+    });
+}
+
+// --- SESSION PROTECTION & SIGN OUT ---
+async function checkUserSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // If no active session and we are not already on the login page, redirect!
+    if ((!session && window.location.pathname.includes('index.html')) || (!session && window.location.pathname.includes('admin.html'))) {
+        window.location.href = 'login.html';
+    }
+}
+
+// Run session check on page load
+if (window.supabase) {
+    checkUserSession();
+}
+
+// Global Sign Out Function
+window.handleSignOut = async function() {
+    // 1. Clear the role storage immediately
+    localStorage.removeItem('userRole');
+
+    // 2. Try clearing Supabase session if available
+    try {
+        if (typeof supabase !== 'undefined') {
+            await supabase.auth.signOut();
+        }
+    } catch (err) {
+        console.log("Session notice:", err);
+    }
+
+    // 3. Unconditionally force redirect to the login page
+    window.location.href = 'login.html';
+};
