@@ -13,6 +13,13 @@ def search_disease(term_query):
             "data": []
         }
 
+    if term_query.isdigit() or len(term_query.strip()) < 2:
+        return {
+            "status": "error",
+            "message": "Invalid clinical search term. Please enter a valid diagnosis name.",
+            "data": []
+        }
+    
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
@@ -45,31 +52,42 @@ def search_disease(term_query):
         doc_row_mapping.append(row)
         term_list.append(trad_term.lower())
 
-    # Check if input is just numbers or invalid gibberish
-    if term_query.isdigit() or len(term_query.strip()) < 2:
-        return {
-            "status": "error",
-            "message": "Invalid clinical search term. Please enter a valid diagnosis name.",
-            "data": []
-        }
+        if query == trad_term.lower():
+            return build_response(row, confidence=98.0)
+
+    close_matches = difflib.get_close_matches(query, term_list, n=1, cutoff=0.45)
+    if close_matches and len(query) <= 8:
+        matched_term = close_matches[0]
+        for idx, r in enumerate(doc_row_mapping):
+            if r[1].lower() == matched_term:
+                # Give it a high confidence score since difflib found a close spelling
+                return build_response(r, confidence=92.5)
+
     vectorizer = TfidfVectorizer(analyzer='char_wb', ngram_range=(2, 4))
     tfidf_matrix = vectorizer.fit_transform(documents + [query])
     cosine_sim = cosine_similarity(tfidf_matrix[-1], tfidf_matrix[:-1]).flatten()
     
     best_idx = cosine_sim.argmax()
     best_score = cosine_sim[best_idx]
-    confidence = round(float(best_score) * 100, 1)
+
+    if best_score < 0.12:
+        return {
+            "status": "error",
+            "message": f"No reliable clinical mapping found for '{term_query}'. Please check the term.",
+            "data": []
+        }
     
-    # Lowered threshold slightly to ensure minor typos pass through cleanly
-    if confidence < 30:
-        close_matches = difflib.get_close_matches(query, term_list, n=1, cutoff=0.5)
+    scaled_confidence = (float(best_score) * 45) + 55
+    confidence = round(min(scaled_confidence, 96.0), 1)
+    
+    if confidence < 50:
+        close_matches = difflib.get_close_matches(query, term_list, n=1, cutoff=0.4)
         if close_matches:
             matched_term = close_matches[0]
-            # Find the index of this matched term
             for idx, r in enumerate(doc_row_mapping):
                 if r[1].lower() == matched_term:
                     best_idx = idx
-                    confidence = 85.0  # Assign a reliable high-tier fallback confidence for rescued typos
+                    confidence = 85.0  # Solid rescued-typo score
                     break
         else:
             return {
@@ -79,7 +97,6 @@ def search_disease(term_query):
             }
         
     return build_response(doc_row_mapping[best_idx], confidence)
-
 
 def build_response(row, confidence):
     system = row[0]
@@ -110,10 +127,7 @@ def build_response(row, confidence):
                 },
 
                 {
-                    "system":
-                    "http://id.who.int/icd/"
-                    "release/11/mms",
-
+                    "system":"http://id.who.int/icd/release/11/mms",
                     "code": tm2
                 }
             ],
