@@ -2,14 +2,17 @@ import os
 import csv
 import io
 import datetime
+import pandas as pd
 from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from search_engine import search_disease
 from fastapi import File, UploadFile
 from fastapi.responses import StreamingResponse, PlainTextResponse
 
 app = FastAPI(title = "MedBridge API")
+app.mount("/src", StaticFiles(directory="src"), name="src")
 class MappingRequest(BaseModel):
     term: str
 
