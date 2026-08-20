@@ -3,12 +3,11 @@ import csv
 import io
 import datetime
 import pandas as pd
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, File, UploadFile
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from search_engine import search_disease
-from fastapi import File, UploadFile
 from fastapi.responses import StreamingResponse, PlainTextResponse
 
 app = FastAPI(title = "MedBridge API")
@@ -45,29 +44,21 @@ def get_icd_code(disease_name: str, background_tasks: BackgroundTasks):
 
 @app.post("/api/v1/map")
 def map_term(request: MappingRequest, background_tasks: BackgroundTasks):
-    background_tasks.add_task(
-        log_audit,
-        request.term
-    )
+    background_tasks.add_task(log_audit, request.term)
     result = search_disease(request.term)
     return result
 
 @app.post("/api/v1/bulk-map", tags=["Enterprise Features"])
-async def bulk_map_csv(file: UploadFile = File(...)):
+async def bulk_map_xlsx(file: UploadFile = File(...)):
     content = await file.read()
     text = content.decode("utf-8")
     
-    output_csv = io.StringIO()
-    writer = csv.writer(output_csv)
-    
-    writer.writerow(["Original_Diagnosis", "Status", "NAMASTE_Code", "ICD_11_Code", "Confidence", "System"])
+    # Create a list to store rows instead of writing directly to CSV
+    processed_data = []
     
     reader = csv.reader(io.StringIO(text))
-    next(reader, None)
+    next(reader, None) # Skip header
     
-    success_count = 0
-    fail_count = 0
-
     for row in reader:
         if not row: continue
         term = row[0].strip()
@@ -75,25 +66,47 @@ async def bulk_map_csv(file: UploadFile = File(...)):
         
         if result["status"] == "success":
             fhir = result["data"][0]
-            namaste = fhir["code"]["coding"][0]["code"]
-            icd = fhir["code"]["coding"][1]["code"]
-            conf = fhir["confidenceScore"]
-            sys_name = fhir["code"]["coding"][0]["system"].split(":")[-1].upper()
-            
-            writer.writerow([term, "Mapped", namaste, icd, conf, sys_name])
-            success_count += 1
+            modern_name = fhir["modernEquivalent"]
+            processed_data.append([
+                term,
+                modern_name, 
+                "Mapped", 
+                fhir["code"]["coding"][0]["code"], 
+                fhir["code"]["coding"][1]["code"], 
+                fhir["confidenceScore"], 
+                fhir["code"]["coding"][0]["system"].split(":")[-1].upper()
+            ])
         else:
-            writer.writerow([term, "Failed (Needs Manual Review)", "N/A", "N/A", "N/A", "N/A"])
-            fail_count += 1
+            processed_data.append([term, "N/A", "Failed", "N/A", "N/A", "N/A", "N/A"])
 
-    output_csv.seek(0)
+    # Create a Professional DataFrame
+    df = pd.DataFrame(processed_data, columns=[
+        "Original_Diagnosis", "Modern_Clinical_Name", "Status", 
+        "NAMASTE_Code", "ICD_11_Code", "Confidence", "System"
+    ])
     
-    print(f"Bulk Processed: {success_count} mapped, {fail_count} failed.")
+    # Save to Excel in memory with auto-fit columns
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Mapped_Data')
+        
+        # Get the xlsxwriter or openpyxl worksheet object
+        worksheet = writer.sheets['Mapped_Data']
+        for idx, col in enumerate(df.columns):
+            # Calculate column width based on max string length
+            series = df[col].astype(str)
+            max_len = max(series.map(len).max(), len(col)) + 4
+            worksheet.column_dimensions[chr(65 + idx)].width = max_len
+            
+    output.seek(0)
+    
+    # Determine filename (swap .csv to .xlsx)
+    new_filename = file.filename.replace('.csv', '.xlsx')
     
     return StreamingResponse(
-        output_csv, 
-        media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename=MedBridge_Standardized_{file.filename}"}
+        output, 
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={new_filename}"}
     )
 
 @app.get("/api/v1/audit-logs", tags=["Enterprise Features"])
