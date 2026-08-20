@@ -105,62 +105,79 @@ def build_response(row, confidence):
     tm2 = row[3]
 
     modern_mapping = {
-        # General & Febrile Conditions
+        # 1-10
         "jvara": "Pyrexia / Fever",
-        "jirna jvara": "Chronic Fever / Pyrexia of Unknown Origin",
-        "vishama jvara": "Intermittent Fever / Malaria",
-        
-        # Gastrointestinal & Metabolic Disorders
-        "atisara": "Acute Diarrhea / Gastroenteritis",
-        "pravahika": "Dysentery",
-        "grahani": "Malabsorption Syndrome / Irritable Bowel Syndrome (IBS)",
-        "amlapitta": "Hyperacidity / Gastroesophageal Reflux Disease (GERD)",
-        "udararoga": "Abdominal Disorder / Ascites",
-        "vibandha": "Constipation",
-        "chhardi": "Emesis / Nausea and Vomiting",
-        "arshas": "Hemorrhoids / Piles",
-        "bhagandara": "Anal Fistula",
-        
-        # Endocrine & Metabolic
-        "prameha": "Diabetes Mellitus / Metabolic Disorder",
-        "madhumeha": "Type 2 Diabetes Mellitus",
-        "sthaulya": "Obesity",
-        
-        # Respiratory Disorders
+        "suram": "Pyrexia / Fever",
+        "humma": "Pyrexia / Fever",
         "kasa": "Cough / Bronchitis",
         "shwasa": "Bronchial Asthma / Dyspnea",
-        "tamaka shwasa": "Bronchial Asthma",
-        "pinasa": "Allergic Rhinitis / Sinusitis",
-        "kshaya": "Tuberculosis / Pulmonary Wasting",
-        
-        # Musculoskeletal & Joint Disorders
-        "amavata": "Rheumatoid Arthritis",
-        "sandhigata vata": "Osteoarthritis",
-        "vatarakta": "Gouty Arthritis",
-        "grdhrasi": "Sciatica / Lumbar Radiculopathy",
-        "kati shoola": "Low Back Pain",
-        
-        # Blood, Liver & Urinary Disorders
+        "irumal": "Cough",
+        "su-al": "Cough",
+        "hikka": "Hiccups",
         "pandu": "Anemia / Iron Deficiency Anemia",
-        "kamala": "Jaundice / Viral Hepatitis",
-        "raktapitta": "Bleeding Disorder / Thrombocytopenia",
-        "mutrakricchra": "Dysuria / Urinary Tract Infection (UTI)",
-        "ashmari": "Urolithiasis / Kidney Stones",
-        "meha": "Urinary Tract Disorder",
+        "manjal noi": "Jaundice / Viral Hepatitis",
         
-        # Neurological & Mental Health
-        "apasmara": "Epilepsy / Seizure Disorder",
-        "unmada": "Psychosis / Psychiatric Disorder",
-        "vatavyadhi": "Neurological Disorder / Paralysis",
-        "pakshaghata": "Hemiplegia / Stroke",
-        "shirashoola": "Cephalea / Tension Headache / Migraine",
+        # 11-20
+        "yarqan": "Jaundice / Viral Hepatitis",
+        "aruchi": "Anorexia / Loss of Appetite",
+        "ajirana": "Indigestion",
+        "mandham": "Indigestion",
+        "su-e-hazm": "Indigestion",
+        "atisara": "Acute Diarrhea / Gastroenteritis",
+        "kazhichal": "Diarrhea",
+        "ishal": "Diarrhea",
+        "grahani": "Malabsorption Syndrome / IBS",
+        "chardi": "Emesis / Nausea and Vomiting",
         
-        # Skin & External Conditions
-        "kushta": "Chronic Dermatosis / Psoriasis / Eczema",
-        "visarpa": "Erysipelas / Herpes / Acute Skin Infection",
+        # 21-30
+        "vanti": "Vomiting",
+        "qai": "Vomiting",
+        "mutraghata": "Urinary Retention",
+        "neerizhivu": "Diabetes Mellitus",
+        "zayabetus": "Diabetes Mellitus",
+        "prameha": "Diabetes Mellitus / Metabolic Disorder",
+        "sandhigata vata": "Osteoarthritis",
+        "azhal keel vayu": "Osteoarthritis",
+        "waja-ul-mafasil": "Arthritis / Joint Pain",
+        "gridhrasi": "Sciatica / Lumbar Radiculopathy",
+        
+        # 31-40
+        "ardita": "Facial Paralysis",
+        "ajal kirkrippu": "Dermatitis",
+        "sadra-o-dwar": "Skin Disorder",
+        "kandu": "Itching / Pruritus",
+        "kampavata": "Parkinsonism / Tremors",
+        "sori": "Scabies / Itching",
+        "hikka-e-jild": "Skin Inflammation",
+        "dadru": "Ringworm / Tinea",
+        "vellai noi": "Leucorrhea",
+        "bars": "Vitiligo",
+        
+        # 41-50
         "shotha": "Edema / Inflammatory Swelling",
-        "granthi": "Cyst / Benign Tumor",
-        "arbuda": "Neoplasm / Malignant Tumor"
+        "neeradai": "Cold / Rhinitis / Nasal Congestion",
+        "raktapitta": "Bleeding Disorder / Thrombocytopenia",
+        "gunmam": "Gastritis / Acidity",
+        "nazla": "Common Cold / Catarrh",
+        "vatarakta": "Gouty Arthritis",
+        "karappan": "Eczema / Dermatitis",
+        "warm": "Inflammation / Swelling",
+        "pakshaghata": "Stroke / Paralysis",
+        "soolai": "Colic / Abdominal Pain",
+        
+        # 51-62
+        "uqr": "Infertility",
+        "unmada": "Psychosis / Mental Disorder",
+        "vali noi": "Neurological Disorder",
+        "khafaqan": "Palpitation",
+        "shirashoola": "Headache / Migraine",
+        "siraneer": "Urinary Dysfunction",
+        "suda": "Headache",
+        "bhagna": "Bone Fracture",
+        "ootha noi": "Dropsy / Edema",
+        "amraz-e-jild": "Skin Disease",
+        "ashmari": "Kidney Stones / Renal Calculi",
+        "kayam": "Fatigue / Body Weakness"
     }
 
     modern_term = modern_mapping.get(trad_term.lower(), "Standardized Clinical Presentation")
