@@ -104,9 +104,71 @@ def build_response(row, confidence):
     namaste = row[2]
     tm2 = row[3]
 
+    modern_mapping = {
+        # General & Febrile Conditions
+        "jvara": "Pyrexia / Fever",
+        "jirna jvara": "Chronic Fever / Pyrexia of Unknown Origin",
+        "vishama jvara": "Intermittent Fever / Malaria",
+        
+        # Gastrointestinal & Metabolic Disorders
+        "atisara": "Acute Diarrhea / Gastroenteritis",
+        "pravahika": "Dysentery",
+        "grahani": "Malabsorption Syndrome / Irritable Bowel Syndrome (IBS)",
+        "amlapitta": "Hyperacidity / Gastroesophageal Reflux Disease (GERD)",
+        "udararoga": "Abdominal Disorder / Ascites",
+        "vibandha": "Constipation",
+        "chhardi": "Emesis / Nausea and Vomiting",
+        "arshas": "Hemorrhoids / Piles",
+        "bhagandara": "Anal Fistula",
+        
+        # Endocrine & Metabolic
+        "prameha": "Diabetes Mellitus / Metabolic Disorder",
+        "madhumeha": "Type 2 Diabetes Mellitus",
+        "sthaulya": "Obesity",
+        
+        # Respiratory Disorders
+        "kasa": "Cough / Bronchitis",
+        "shwasa": "Bronchial Asthma / Dyspnea",
+        "tamaka shwasa": "Bronchial Asthma",
+        "pinasa": "Allergic Rhinitis / Sinusitis",
+        "kshaya": "Tuberculosis / Pulmonary Wasting",
+        
+        # Musculoskeletal & Joint Disorders
+        "amavata": "Rheumatoid Arthritis",
+        "sandhigata vata": "Osteoarthritis",
+        "vatarakta": "Gouty Arthritis",
+        "grdhrasi": "Sciatica / Lumbar Radiculopathy",
+        "kati shoola": "Low Back Pain",
+        
+        # Blood, Liver & Urinary Disorders
+        "pandu": "Anemia / Iron Deficiency Anemia",
+        "kamala": "Jaundice / Viral Hepatitis",
+        "raktapitta": "Bleeding Disorder / Thrombocytopenia",
+        "mutrakricchra": "Dysuria / Urinary Tract Infection (UTI)",
+        "ashmari": "Urolithiasis / Kidney Stones",
+        "meha": "Urinary Tract Disorder",
+        
+        # Neurological & Mental Health
+        "apasmara": "Epilepsy / Seizure Disorder",
+        "unmada": "Psychosis / Psychiatric Disorder",
+        "vatavyadhi": "Neurological Disorder / Paralysis",
+        "pakshaghata": "Hemiplegia / Stroke",
+        "shirashoola": "Cephalea / Tension Headache / Migraine",
+        
+        # Skin & External Conditions
+        "kushta": "Chronic Dermatosis / Psoriasis / Eczema",
+        "visarpa": "Erysipelas / Herpes / Acute Skin Infection",
+        "shotha": "Edema / Inflammatory Swelling",
+        "granthi": "Cyst / Benign Tumor",
+        "arbuda": "Neoplasm / Malignant Tumor"
+    }
+
+    modern_term = modern_mapping.get(trad_term.lower(), "Standardized Clinical Presentation")
+
     fhir_payload = {
         "resourceType": "Condition",
         "confidenceScore": f"{confidence}%",
+        "modernEquivalent": modern_term,
         "clinicalStatus": {
             "coding": [
                 {
