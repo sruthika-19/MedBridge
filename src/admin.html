@@ -94,6 +94,11 @@
         const supabaseKey = 'sb_publishable_cj81k7F5rEs7YhRerW5H9w_UwaQIylv';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+        if (typeof supabase === 'undefined') {
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        window.supabaseClient = supabase; // Use a different name for the global instance
+        }
+        
         async function verifyAdminAccess() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
