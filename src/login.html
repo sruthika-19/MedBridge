@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AyushSync - Authentication</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme d-flex align-items-center justify-content-center" style="min-height: 100vh; overflow: hidden;">
+
+    <div class="login-wrapper glass-panel shadow-lg d-flex flex-column flex-md-row">
+        
+        <!-- Left Panel: The Pitch -->
+        <div class="login-left p-5 d-flex flex-column justify-content-center">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div class="logo-icon">〰</div>
+                <h3 class="fw-bold m-0 text-white">MedBridge</h3>
+            </div>
+            <h2 class="fw-bold text-white mb-2">Traditional Medicine.</h2>
+            <h2 class="fw-bold gradient-text mb-4">Standardized.<br>Interoperable.</h2>
+            <p class="text-muted small mb-4">
+                Bridge Siddha and Ayurveda terminology with NAMASTE and WHO ICD-11 TM2 codes — built on FHIR R4 and Indian EHR interoperability principles.
+            </p>
+            <ul class="list-unstyled feature-list small text-muted mb-0">
+                <li class="mb-2"><span class="text-info me-2">●</span> AI semantic dual-coding</li>
+                <li class="mb-2"><span class="text-info me-2">●</span> FHIR R4 encounter export</li>
+                <li><span class="text-info me-2">●</span> Offline-ready PWA</li>
+            </ul>
+        </div>
+
+        <!-- Right Panel: The Form -->
+        <div class="login-right p-5 d-flex flex-column justify-content-center position-relative">
+            <!-- Updated to LIVE AUTH Badge -->
+            <span class="badge position-absolute top-0 end-0 mt-4 me-4" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.65rem; letter-spacing: 1px;">LIVE AUTH</span>
+            
+            <h4 class="fw-bold text-white mb-1">Sign in</h4>
+            <p class="text-muted small mb-4">Access your AyushSync workspace</p>
+
+            <!-- Role Toggle -->
+            <div class="role-toggle d-flex mb-4">
+                <button class="role-btn active flex-fill" id="clinicianToggle" type="button">🩺 Clinician</button>
+                <button class="role-btn flex-fill" id="adminToggle" type="button">🛡️ Administrator</button>
+            </div>
+
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label text-muted small mb-1">Email</label>
+                    <input type="email" id="emailInput" class="form-control custom-input py-2" placeholder="name@facility.in" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label text-muted small mb-1">Password</label>
+                    <div class="input-group">
+                        <input type="password" id="passwordInput" class="form-control custom-input py-2" placeholder="••••••••" required>
+                        <button class="btn btn-outline-secondary" type="button" id="togglePassword" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #a0aec0;">👁️</button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn w-100 search-btn py-2 mb-3">Sign in securely</button>
+                
+                <div class="text-center text-muted" style="font-size: 0.75rem;">
+                    <p class="mb-1 text-info">Connected to live Supabase database</p>
+                    <p class="mb-0" style="opacity: 0.5;">Production-grade security.<br>Structured for ABDM/ABHA OAuth integration.</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 1. Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        try {
+            // 2. Initialize Supabase
+            const supabaseUrl = 'https://xcqbkukofmswjxjuzyqw.supabase.co';
+            const supabaseKey = 'sb_publishable_cj81k7F5rEs7YhRerW5H9w_UwaQIylv';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // Toggle Logic
+            let currentRole = 'clinician';
+            const clinicianBtn = document.getElementById('clinicianToggle');
+            const adminBtn = document.getElementById('adminToggle');
+
+            clinicianBtn.addEventListener('click', () => {
+                currentRole = 'clinician';
+                clinicianBtn.classList.add('active');
+                adminBtn.classList.remove('active');
+            });
+
+            adminBtn.addEventListener('click', () => {
+                currentRole = 'admin';
+                adminBtn.classList.add('active');
+                clinicianBtn.classList.remove('active');
+            });
+
+            document.getElementById('togglePassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('passwordInput');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.textContent = type === 'password' ? '👁️' : '🔒';
+            });
+
+            // 3. Live Authentication Logic (Attached Safely!)
+            document.getElementById('loginForm').addEventListener('submit', async function(event) {
+                // 🛑 STOP THE REFRESH FIRST THING
+                event.preventDefault(); 
+                
+                const submitBtn = event.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerText;
+                
+                try {
+                    const email = document.getElementById('emailInput').value;
+                    const password = document.getElementById('passwordInput').value;
+                    
+                    // UI Loading state
+                    submitBtn.innerText = 'Authenticating...';
+                    submitBtn.disabled = true;
+
+                    // Supabase API Call
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password,
+                    });
+
+                    // If Supabase rejects the login, throw the error
+                    if (error) throw error;
+
+                    // Success! Redirect to the correct portal
+                    console.log("Logged in successfully:", data.user.email);
+                    localStorage.setItem('userRole', currentRole);
+                    if (currentRole === 'clinician') {
+                        window.location.href = 'index.html';
+                    } else {
+                        window.location.href = 'admin.html';
+                    }
+
+                } catch (authError) {
+                    // Handle failure gracefully
+                    alert("Login Failed: " + authError.message);
+                    submitBtn.innerText = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+
+        } catch (initializationError) {
+            console.error("Script crashed:", initializationError);
+            alert("System error. Please press F12 and check the Console tab.");
+        }
+    </script>
+</body>
+</html>
