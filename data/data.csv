@@ -1,41 +1,63 @@
-            ID,SYSTEM,TRADITIONAL TERM,NAMASTE CODE,TM2 CODE, ALIASES
-1,Ayurveda,jvara,AYU-101,SP51, fever|high temperature
-2,Siddha,suram,SID-045,SL41
-3,Unani,humma,UNA-090,SP51
-4,Ayurveda,kasa,AYU-112,SL41
-5,Ayurveda,shwasa,AYU-113,SL42
-6,Siddha,irumal,SID-046,SL41
-7,Unani,su-al,UNA-091,SL41
-8,Ayurveda,hikka,AYU-114,SM74
-9,Ayurveda,pandu,AYU-115,SL80
-10,Siddha,manjal noi,SID-047,SM20
-11,Unani,yarqan,UNA-092,SM20
-12,Ayurveda,aruchi,AYU-116,SM10
-13,Ayurveda,ajirana,AYU-117,SM10
-14,Siddha,mandham,SID-048,SM10
-15,Unani,su-e-hazm,UNA-093,SM10
-16,Ayurveda,atisara,AYU-118,SM30
-17,Siddha,kazhichal,SID-049,SM30
-18,Unani,ishal,UNA-094,SM30
-19,Ayurveda,grahani,AYU-119,SM40
-20,Ayurveda,chardi,AYU-120,SM70
-21,Siddha,vanti,SID-050,SM70
-22,Unani,qai,UNA-095,SM70
-23,Ayurveda,mutraghata,AYU-121,SM80
-24,Siddha,neerizhivu,SID-051,SN10
-25,Unani,zayabetus,UNA-096,SN10
-26,Ayurveda,prameha,AYU-122,SN10
-27,Ayurveda,sandhigata vata,AYU-123,SP12
-28,Siddha,azhal keel vayu,SID-052,SP12
-29,Unani,waja-ul-mafasil,UNA-097,SP12
-30,Ayurveda,gridhrasi,AYU-124,SP20
-31,Ayurveda,ardita,AYU-125,SP20
-32,Siddha,ajal kirkrippu,SID-053,SK00
-33,Unani,sadra-o-dwar,UNA-098,SK00
-34,Ayurveda,kandu,AYU-126,SK52
-35,Ayurveda,kampavata,AYU-127,SN40
-36,Siddha,sori,SID-054,SN40
-37,Unani,hikka-e-jild,UNA-099,SN40
-38,Ayurveda,dadru,AYU-128,SN50
-39,Siddha,vellai noi,SID-055,SN60
-40,Unani,bars,UNA-100,SN60
+ID,SYSTEM,TRADITIONAL TERM,NAMASTE CODE,TM2 CODE,ALIASES
+1,Ayurveda,jvara,AYU-101,SP51,fever|pyrexia|jwaram
+2,Siddha,suram,SID-045,SL41,fever|jwaram
+3,Unani,humma,UNA-090,SP51,fever
+4,Ayurveda,kasa,AYU-112,SL41,cough|bronchitis|kaasa
+5,Ayurveda,shwasa,AYU-113,SL42,asthma|dyspnea|shwas
+6,Siddha,irumal,SID-046,SL41,cough
+7,Unani,su-al,UNA-091,SL41,cough
+8,Ayurveda,hikka,AYU-114,SM74,hiccups
+9,Ayurveda,pandu,AYU-115,SL80,anemia
+10,Siddha,manjal noi,SID-047,SM20,jaundice
+11,Unani,yarqan,UNA-092,SM20,jaundice
+12,Ayurveda,aruchi,AYU-116,SM10,anorexia|loss of appetite
+13,Ayurveda,ajirana,AYU-117,SM10,indigestion
+14,Siddha,mandham,SID-048,SM10,indigestion
+15,Unani,su-e-hazm,UNA-093,SM10,indigestion
+16,Ayurveda,atisara,AYU-118,SM30,diarrhea|gastroenteritis
+17,Siddha,kazhichal,SID-049,SM30,kaichal|kaaichal|diarrhea
+18,Unani,ishal,UNA-094,SM30,diarrhea
+19,Ayurveda,grahani,AYU-119,SM40,malabsorption|IBS
+20,Ayurveda,chardi,AYU-120,SM70,vomiting|nausea
+21,Siddha,vanti,SID-050,SM70,vomiting
+22,Unani,qai,UNA-095,SM70,vomiting
+23,Ayurveda,mutraghata,AYU-121,SM80,urinary retention
+24,Siddha,neerizhivu,SID-051,SN10,diabetes
+25,Unani,zayabetus,UNA-096,SN10,diabetes
+26,Ayurveda,prameha,AYU-122,SN10,diabetes|metabolic disorder
+27,Ayurveda,sandhigata vata,AYU-123,SP12,osteoarthritis
+28,Siddha,azhal keel vayu,SID-052,SP12,osteoarthritis
+29,Unani,waja-ul-mafasil,UNA-097,SP12,arthritis|joint pain
+30,Ayurveda,gridhrasi,AYU-124,SP20,sciatica
+31,Ayurveda,ardita,AYU-125,SP20,facial paralysis
+32,Siddha,ajal kirkrippu,SID-053,SK00,dermatitis
+33,Unani,sadra-o-dwar,UNA-098,SK00,skin disorder
+34,Ayurveda,kandu,AYU-126,SK52,itching|pruritus
+35,Ayurveda,kampavata,AYU-127,SN40,parkinsonism|tremors
+36,Siddha,sori,SID-054,SN40,scabies|itching
+37,Unani,hikka-e-jild,UNA-099,SN40,skin inflammation
+38,Ayurveda,dadru,AYU-128,SN50,ringworm|tinea
+39,Siddha,vellai noi,SID-055,SN60,leucorrhea
+40,Unani,bars,UNA-100,SN60,vitiligo
+41,Ayurveda,shotha,AYU-129,ME84,edema|inflammatory swelling
+42,Siddha,neeradai,SID-056,CA00,cold|rhinitis|nasal congestion
+43,Ayurveda,Raktapitta,AYU-130,KD00,bleeding disorder|thrombocytopenia
+44,Siddha,Gunmam,SID-057,SM10,gastritis|acidity
+45,Unani,Nazla,UNA-101,CA00,common cold|catarrh
+46,Ayurveda,Vatarakta,AYU-131,SP12,gout
+47,Siddha,Karappan,SID-058,SK50,eczema|dermatitis
+48,Unani,Warm,UNA-102,ME84,inflammation|swelling
+49,Ayurveda,Pakshaghata,AYU-132,SK00,stroke|paralysis
+50,Siddha,Soolai,SID-059,SP12,colic|abdominal pain
+51,Unani,Uqr,UNA-103,SN60,infertility
+52,Ayurveda,Unmada,AYU-133,SK00,psychosis|mental disorder
+53,Siddha,Vali noi,SID-060,SK00,neurological disorder
+54,Unani,Khafaqan,UNA-104,SK00,palpitation
+55,Ayurveda,Shirashoola,AYU-134,SK00,headache|migraine
+56,Siddha,Siraneer,SID-061,SM80,urinary dysfunction
+57,Unani,Suda,UNA-105,SK00,headache
+58,Ayurveda,Bhagna,AYU-135,SP12,bone fracture
+59,Siddha,Ootha noi,SID-062,ME84,dropsy|edema
+60,Unani,Amraz-e-Jild,UNA-106,SK50,skin disease
+61,Ayurveda,Ashmari,AYU-136,SM80,kidney stones|renal calculi
+62,Siddha,Kayam,SID-063,SK00,fatigue|body weakness
