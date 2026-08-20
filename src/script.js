@@ -65,9 +65,14 @@ if (diseaseInput && searchButton) {
                                 <div class="col-sm-8 text-dark">${termName}</div>
                             </div>
                             <div class="row mb-2">
+                                <div class="col-sm-4 text-muted fw-bold">Modern Equivalent:</div>
+                                <div class="col-sm-8 text-info fw-semibold">${fhirData.modernEquivalent || 'Clinical Presentation'}</div>
+                            </div>
+                            <div class="row mb-2">
                                 <div class="col-sm-4 text-muted fw-bold">NAMASTE Code:</div>
                                 <div class="col-sm-8 text-dark">${namasteCode}</div>
                             </div>
+
                             <div class="row mb-3">
                                 <div class="col-sm-4 text-muted fw-bold">TM2 / ICD-11 Code:</div>
                                 <div class="col-sm-8 text-dark">${tm2Code}</div>
