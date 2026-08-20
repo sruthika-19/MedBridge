@@ -224,8 +224,8 @@ if (bulkUploadBtn && csvFileInput) {
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = downloadUrl;
-                a.download = `MedBridge_Standardized_${file.name}`;
-                document.body.appendChild(a);
+                a.download = `MedBridge_Standardized_${file.name.replace('.csv', '.xlsx')}`;                document.body.appendChild(a);
+                document.body.appendChild(a);    
                 a.click();
                 a.remove();
                 
