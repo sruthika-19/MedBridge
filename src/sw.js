@@ -39,6 +39,9 @@ self.addEventListener('activate', (event) => {
 
 // Fetch Event: Serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+    if (event.request.url.includes('/api/') || event.request.url.includes('/sync/')) {
+        return; 
+    }
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
             if (cachedResponse) {
