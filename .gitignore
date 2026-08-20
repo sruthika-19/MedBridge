@@ -1,3 +1,9 @@
 venv/
 __pycache__/
 .DS_Store
+
+# Add these lines to ignore local databases and logs
+mappings.db
+audit_log.txt
+*.db
+*.log
