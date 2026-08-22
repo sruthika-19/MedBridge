@@ -1,3 +1,6 @@
 fastapi
 uvicorn
 scikit-learn
+pandas
+openpyxl
+python-multipart
