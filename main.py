@@ -9,11 +9,35 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from search_engine import search_disease
-from fastapi.responses import StreamingResponse, PlainTextResponse
+from fastapi.responses import StreamingResponse, PlainTextResponse, HTMLResponse
 from typing import Optional
 
 app = FastAPI(title = "MedBridge API")
-app.mount("/src", StaticFiles(directory="src"), name="src")
+
+@app.get("/", response_class=HTMLResponse, tags=["Frontend Portal"])
+async def serve_frontend():
+    login_path = os.path.join("src", "login.html")
+    if os.path.exists(login_path):
+        with open(login_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>login.html not found in src</h1>"
+
+@app.get("/index.html", response_class=HTMLResponse, tags=["Frontend Portal"])
+async def serve_dashboard():
+    index_path = os.path.join("src", "index.html")
+    if os.path.exists(index_path):
+        with open(index_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>index.html not found in src</h1>"
+
+@app.get("/admin.html", response_class=HTMLResponse, tags=["Frontend Portal"])
+async def serve_admin():
+    admin_path = os.path.join("src", "admin.html")
+    if os.path.exists(admin_path):
+        with open(admin_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>admin.html not found in src</h1>"
+
 class MappingRequest(BaseModel):
     term: str
 
@@ -32,16 +56,11 @@ def log_audit(term: str):
     with open("audit_log.txt", "a") as f:
         f.write(f"[{datetime.datetime.now()}] SEARCH QUERY: '{term}' | STATUS: Logged\n")
 
-@app.get("/", tags=["Health Check"])
-def home():
-    return {"message": "Welcome to the MedBridge API. Systems operational."}
+#@app.get("/", tags=["Health Check"])
+#def home():
+#    return {"message": "Welcome to the MedBridge API. Systems operational."}
 
-@app.get(
-    "/sync/{disease_name}", 
-    summary="Search Traditional Term",
-    tags=["EMR Integration"]
-)
-
+@app.get("/sync/{disease_name}", summary="Search Traditional Term",tags=["EMR Integration"])
 def get_icd_code(disease_name: str, system: Optional[str] = None, background_tasks: BackgroundTasks = None):
     if background_tasks:
         background_tasks.add_task(log_audit, f"{disease_name} (System: {system})")
@@ -56,6 +75,12 @@ def map_term(request: MappingRequest, system: Optional[str] = None, background_t
         
     result = search_disease(request.term, system_filter=system)
     return result
+
+@app.post("/api/v1/ai-scribe", tags=["Advanced AI Layer"])
+def ai_clinical_scribe(request: ScribeRequest, background_tasks: BackgroundTasks = None):
+    if background_tasks:
+        background_tasks.add_task(log_audit, f"AI Scribe processed notes (Length: {len(request.notes)})")
+    return extract_and_bundle_notes(request.notes)
 
 @app.post("/api/v1/bulk-map", tags=["Enterprise Features"])
 async def bulk_map_xlsx(file: UploadFile = File(...)):
@@ -127,10 +152,19 @@ def get_audit_logs():
         return PlainTextResponse(logs)
     return "No audit logs found yet. Perform a search to generate logs."
 
-@app.post("/api/v1/ai-scribe", tags=["Advanced AI Layer"])
-def ai_clinical_scribe(request: ScribeRequest, background_tasks: BackgroundTasks = None):
-    if background_tasks:
-        background_tasks.add_task(log_audit, f"AI Scribe processed notes (Length: {len(request.notes)})")
-    
-    result = extract_and_bundle_notes(request.notes)
-    return result
+app.mount("/src", StaticFiles(directory="src"), name="src")
+
+@app.get("/", response_class=HTMLResponse, tags=["Frontend Portal"])
+async def serve_login():
+    with open(os.path.join("src", "login.html"), "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/index.html", response_class=HTMLResponse, tags=["Frontend Portal"])
+async def serve_dashboard():
+    with open(os.path.join("src", "index.html"), "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/admin.html", response_class=HTMLResponse, tags=["Frontend Portal"])
+async def serve_admin():
+    with open(os.path.join("src", "admin.html"), "r", encoding="utf-8") as f:
+        return f.read()

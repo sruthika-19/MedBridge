@@ -6,4 +6,4 @@ __pycache__/
 mappings.db
 audit_log.txt
 *.db
-*.log
+*.loggit commit --amend -m "feat: complete robust backend with Groq integration, FHIR bundling, and

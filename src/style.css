@@ -428,3 +428,25 @@ div[style*="#8b0000" i] {
     color: var(--accent-cyan);
     box-shadow: 0 4px 15px rgba(0, 229, 255, 0.1);
 }
+
+/* Harmonize card typography with your dark cyan theme */
+.card .text-success {
+    color: #38bdf8 !important; /* Soft neon cyan/sky blue for Active Ingredients */
+    font-weight: 600;
+}
+
+.card .text-secondary, 
+.card .text-muted {
+    color: #94a3b8 !important; /* Sleek slate grey for descriptions */
+}
+
+.card .text-warning {
+    color: #fde047 !important; /* Clean warm amber for Risk Radar alerts */
+}
+
+/* Style the Risk Radar container box to fit the dark glass look */
+.card .bg-opacity-25 {
+    background: rgba(239, 68, 68, 0.08) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 10px;
+}

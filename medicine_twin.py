@@ -74,10 +74,11 @@ def get_medicine_twin_data(trad_term):
     prompt = f"""
     You are an expert pharmacology AI. Analyze the traditional medical term: "{trad_term}".
     Return a valid JSON object with exactly these three keys:
-    1. "ingredients": Array of 2-3 traditional herbs.
-    2. "traditional_uses": Array of 1-2 primary clinical uses.
-    3. "risk_warnings": Array of 1-2 severe warnings if mixed with modern allopathic drugs. Start warning with '⚠️ AI Alert:'.
-    """
+    1. "activeIngredients": Array of 2-3 traditional herbs.
+    2. "traditionalUses": Array of 1-2 primary clinical uses.
+    3. "riskRadar": Array of 1-2 severe warnings if mixed with modern allopathic drugs. Start warning with '⚠️ AI Alert:'.
+    Return ONLY a valid JSON object. Do not include markdown code blocks, backticks, or extra text.
+"""
     
     try:
         completion = client.chat.completions.create(

@@ -14,14 +14,18 @@ client = Groq(api_key=groq_api_key)
 
 def extract_and_bundle_notes(doctor_paragraph: str):
     prompt = f"""
-    You are an expert clinical AI assistant. Extract ONLY the medical conditions, diseases, and symptoms from the following text.
+    You are an expert clinical AI assistant specializing in both modern medicine and Indian traditional medical terminology. 
+    Extract all medical conditions, diseases, symptoms, or traditional terms from the following text.
+    CRITICAL: This includes English terms, Sanskrit terms (like jvara), and transliterated regional Indian terms (such as Tamil words like 'irumal' for cough, 'suram' for fever, etc.). 
+    If the text is a single symptom or term, extract it directly.
+    
     Do NOT extract general words, timeframes, or locations (like 'clinic', 'weeks', 'severe', 'patient').
     
     You MUST return a valid JSON object containing an array of strings under the key "terms".
-    Example: {{"terms": ["jvara", "kasa", "prameha"]}}
+    Example: {{"terms": ["irumal", "jvara", "kasa"]}}
     
     Text: "{doctor_paragraph}"
-    """
+"""
     
     try:
         completion = client.chat.completions.create(
