@@ -1,128 +1,433 @@
-# MedBridge EMR Interoperability Platform
+# MedBridge
 
-## Description
-**MedBridge** is an enterprise-grade, intelligent terminology bridge designed to make traditional medicine (Ayurveda, Siddha, and Unani) digitally interoperable with modern healthcare systems and national digital health standards (ABDM).
+### EMR Interoperability Platform for Traditional Medicine
 
-- **What was your motivation?** Millions of patients rely on traditional medicine in India, yet their clinical records hit a roadblock when transitioning to modern hospitals, digital EHRs, or applying for health insurance due to a lack of standardized coding.
-- **Why did you build this project?** We built MedBridge for Smart India Hackathon to bridge the data divide between ancient medical systems and modern digital health infrastructure, ensuring seamless clinical continuity.
-- **What problem does it solve?** Traditional medical diagnoses do not automatically map to modern standardized codes (WHO ICD-11 / TM2 and NAMASTE codes). This causes manual transcription errors, care delays, and insurance claim rejections. MedBridge provides real-time semantic translation into **FHIR-compliant payloads** and automated bulk data migration.
-- **What did you learn?** We learned how to design a hybrid search engine combining TF-IDF vectorization with fuzzy string matching, build secure zero-latency asynchronous APIs with FastAPI and Supabase Auth, and format audit-ready clinical reports dynamically using Pandas.
+**MedBridge** is a healthcare interoperability platform that translates traditional medicine terminology from **Ayurveda, Siddha, and Unani** into standardized digital healthcare representations using **WHO ICD-11/TM2, NAMASTE terminology, and HL7 FHIR R4**.
+
+The platform is designed to reduce terminology mismatches between traditional medicine systems and modern Electronic Medical Records (EMRs), enabling more consistent clinical data exchange and structured healthcare interoperability.
 
 ---
 
-## Architecture & Tech Stack
-- **Backend:** FastAPI, Python, Pydantic, Pandas, Openpyxl, Scikit-learn (TF-IDF Cosine Similarity)
-- **Database:** SQLite (`mappings.db`) for rapid terminology lookup; Supabase for secure Auth & Role Management
-- **Frontend:** HTML5, Bootstrap 5, Custom Glassmorphic CSS, Vanilla JavaScript (Web Speech API, Command Palette)
-- **Compliance & Standards:** WHO ICD-11 Traditional Medicine Module 2 (TM2), AYUSH NAMASTE Portal Codes, HL7 FHIR R4 Condition Resource standard, ABDM Audit Trail logging.
+## Overview
+
+Traditional medicine records often use terminology that is not directly compatible with standardized digital healthcare systems. This creates challenges when patient information needs to be transferred between traditional medicine providers, modern hospitals, EMRs, and other healthcare applications.
+
+**MedBridge addresses this interoperability gap by providing:**
+
+* Intelligent terminology matching
+* WHO ICD-11/TM2 and NAMASTE code mapping
+* Confidence-based search results
+* FHIR R4 `Condition` resource generation
+* Bulk legacy-record migration
+* Role-based authentication
+* Audit logging
+* Offline-capable Progressive Web App (PWA) support
 
 ---
 
-## Project Structure
+## Key Features
+
+### 1. Intelligent Terminology Search
+
+MedBridge uses a hybrid matching approach combining:
+
+* **TF-IDF vectorization**
+* **Cosine similarity**
+* **Fuzzy string matching**
+
+This helps identify relevant standardized terms even when the input contains spelling variations, regional terminology, or minor differences.
+
+Each result is accompanied by a **confidence score** to help users assess the quality of the suggested mapping.
+
+---
+
+### 2. Traditional Medicine Code Mapping
+
+The platform supports terminology from:
+
+* Ayurveda
+* Siddha
+* Unani
+
+and maps these terms to standardized representations including:
+
+* **NAMASTE terminology**
+* **WHO ICD-11 Traditional Medicine Module 2 (TM2)**
+
+---
+
+### 3. FHIR R4 Resource Generation
+
+Mapped clinical information can be transformed into structured **HL7 FHIR R4 `Condition` resources**.
+
+Example workflow:
+
+```text
+Traditional Medicine Term
+          ↓
+   Search & Matching
+          ↓
+   Confidence Scoring
+          ↓
+ NAMASTE / ICD-11 TM2
+          ↓
+    FHIR R4 Condition
+          ↓
+      EMR System
+```
+
+This provides a structured format suitable for integration with modern healthcare applications.
+
+---
+
+### 4. Bulk Data Migration
+
+Hospital administrators can process legacy medical records through CSV uploads.
+
+The migration workflow supports:
+
+* CSV file upload
+* Bulk terminology matching
+* Standardized code generation
+* Data transformation
+* Excel report generation
+* Automated spreadsheet formatting
+
+This reduces the manual effort required to standardize large collections of legacy records.
+
+---
+
+### 5. Role-Based Access
+
+MedBridge provides separate application workflows for:
+
+**Clinicians**
+
+* Search medical terminology
+* Review mapping results
+* View confidence scores
+* Generate FHIR resources
+
+**Administrators**
+
+* Perform bulk migration
+* Review audit logs
+* Monitor system activity
+* Manage administrative workflows
+
+Authentication and role management are implemented using **Supabase Auth**.
+
+---
+
+### 6. Audit Logging
+
+MedBridge maintains transaction-level audit records for terminology searches and system operations.
+
+The audit mechanism provides visibility into:
+
+* Search activity
+* Mapping requests
+* Transaction history
+* Administrative operations
+
+---
+
+### 7. Voice Search
+
+The clinician interface supports voice-based terminology input using the **Web Speech API**.
+
+The application is configured for Indian English (`en-IN`) speech recognition, allowing clinicians to enter terminology through voice as well as text.
+
+---
+
+### 8. Offline-Capable PWA
+
+MedBridge follows a Progressive Web App architecture using:
+
+* Service Worker
+* Web App Manifest
+* Browser-based caching
+
+This improves usability in environments where network connectivity may be limited or intermittent.
+
+---
+
+# Architecture
+
+```text
+                         ┌──────────────────────┐
+                         │   Clinician / Admin  │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │   Web Application    │
+                         │ HTML + Bootstrap + JS│
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │      FastAPI API     │
+                         │   Python Backend     │
+                         └──────────┬───────────┘
+                                    │
+                    ┌───────────────┼────────────────┐
+                    ▼               ▼                ▼
+             ┌────────────┐ ┌─────────────┐ ┌──────────────┐
+             │  Search    │ │ Terminology │ │ Authentication│
+             │   Engine   │ │   Database  │ │ & Roles      │
+             └─────┬──────┘ └──────┬──────┘ └──────────────┘
+                   │               │
+                   └───────┬───────┘
+                           ▼
+                  ┌──────────────────┐
+                  │ Mapping & Scoring │
+                  └────────┬─────────┘
+                           │
+                           ▼
+             ┌────────────────────────────┐
+             │ NAMASTE + ICD-11 / TM2     │
+             └──────────────┬─────────────┘
+                            │
+                            ▼
+                  ┌──────────────────┐
+                  │   FHIR R4 JSON   │
+                  └────────┬─────────┘
+                           │
+                           ▼
+                  ┌──────────────────┐
+                  │ Modern EMR / HIS │
+                  └──────────────────┘
+```
+
+---
+
+# Technology Stack
+
+| Category                  | Technologies                                            |
+| ------------------------- | ------------------------------------------------------- |
+| **Backend**               | Python, FastAPI, Pydantic                               |
+| **Search & Matching**     | Scikit-learn, TF-IDF, Cosine Similarity, Fuzzy Matching |
+| **Data Processing**       | Pandas, Openpyxl                                        |
+| **Database**              | SQLite                                                  |
+| **Authentication**        | Supabase Auth                                           |
+| **Frontend**              | HTML5, Bootstrap 5, Vanilla JavaScript                  |
+| **Voice Input**           | Web Speech API                                          |
+| **Healthcare Standard**   | HL7 FHIR R4                                             |
+| **Terminology Standards** | WHO ICD-11/TM2, NAMASTE                                 |
+| **PWA**                   | Service Worker, Web App Manifest                        |
+| **Development**           | Git, GitHub                                             |
+
+---
+
+# Project Structure
+
 ```text
 MedBridge/
 │
-├── main.py              # FastAPI application & enterprise endpoints
-├── search_engine.py     # TF-IDF & fuzzy matching medical translation engine
-├── setup_db.py          # Relational database initialization script
-├── requirements.txt     # Python project dependencies
-├── mappings.db          # Local SQLite mapping database (auto-generated)
-├── audit_log.txt        # ABDM real-time compliance transaction logs
+├── main.py                  # FastAPI application and API endpoints
+├── search_engine.py         # TF-IDF and fuzzy matching engine
+├── setup_db.py              # Database initialization and seeding
+├── requirements.txt         # Python dependencies
+├── mappings.db              # SQLite terminology database
+├── audit_log.txt            # Application audit log
+│
 ├── data/
-|   |__ bulk_upload.csv  #
-│   └── data.csv         # Master repository of traditional-to-modern medical codes
-└── src/ (or root files)
-    ├── index.html       # Clinician Portal (Search & FHIR generator)
-    ├── admin.html       # Hospital Administrator Portal (Bulk migration & Audit viewer)
-    ├── login.html       # Secure Supabase Authentication portal with role toggles
-    ├── script.js        # Frontend interaction, voice search, & API connectors
-    ├── style.css        # Cyber-medical dark theme & glassmorphic UI styles
-    ├── sw.js            # PWA Service Worker for offline resilience
-    └── manifest.json    # PWA web app manifest
-
+│   ├── data.csv             # Master terminology dataset
+│   └── bulk_upload.csv      # Bulk migration test data
+│
+└── src/
+    ├── index.html           # Clinician interface
+    ├── admin.html           # Administrator interface
+    ├── login.html           # Authentication interface
+    ├── script.js            # Frontend logic and API integration
+    ├── style.css            # Application styling
+    ├── sw.js                # PWA service worker
+    └── manifest.json        # PWA configuration
 ```
 
 ---
 
-## Installation & Local Setup
+# Installation
 
-To run the development environment locally, follow these steps:
+## Prerequisites
 
-1. **Clone the repository:**
+* Python 3.10+
+* Git
+* Modern web browser
+
+## 1. Clone the Repository
+
 ```bash
-git clone https://github.com/sruthika-19/MedBridge
+git clone https://github.com/sruthika-19/MedBridge.git
 cd MedBridge
-
 ```
 
+## 2. Install Dependencies
 
-2. **Install backend dependencies:**
-Ensure you have Python 3.10+ installed, then run:
 ```bash
 python -m pip install -r requirements.txt
-
 ```
 
+## 3. Initialize the Database
 
-3. **Initialize and Seed the Database:**
-Generate the SQLite database (`mappings.db`) from the master dataset:
 ```bash
 python setup_db.py
-
 ```
 
+This creates and populates the local SQLite terminology database.
 
+## 4. Start the Backend
 
----
-
-## Usage
-
-1. **Start the FastAPI Backend Server:**
 ```bash
 python -m uvicorn main:app --reload
-
 ```
 
+The API will be available at:
 
-The API will be live at `http://127.0.0.1:8000`.
-2. **Launch the Application:**
-Open `login.html` in your web browser (or serve it locally) to authenticate via Supabase as a **Clinician** or **Administrator**.
+```text
+http://127.0.0.1:8000
+```
+
+## 5. Launch the Frontend
+
+Open `login.html` in a modern web browser or serve the `src/` directory through a local development server.
 
 ---
 
-## Features
+# Application Workflow
 
-* **Cyber-Medical Terminal UI:** Dark-mode glassmorphic interface featuring custom neon cyan/blue styling and responsive layout.
-* **Voice & Text Search:** Integrated Web Speech API (`en-IN`) enabling clinicians to speak diagnoses directly into the search bar.
-* **Hybrid Semantic Matching:** Combines Python's `difflib` with `scikit-learn` TF-IDF vectorization to accurately map misspelled or regional terms with calculated confidence scores.
-* **Dual Coding Standard Output:** Translates Siddha, Ayurveda, and Unani terms into both **NAMASTE codes** and **WHO ICD-11 / TM2 disease codes**.
-* **FHIR Payload Generation:** Serializes search results into structured HL7 FHIR Condition resources with a one-click copy tool.
-* **Enterprise Bulk Migration:** Allows hospital admins to drag-and-drop legacy CSV records to instantly generate standardized, auto-fitted Excel (`.xlsx`) compliance reports.
-* **ABDM Audit Trail:** Real-time logging of all query transactions to an immutable log file viewable directly within the admin dashboard.
-* **Offline-First PWA:** Configured with a Service Worker to ensure robust access in bandwidth-constrained clinics.
+### Clinician Workflow
+
+```text
+Login
+  ↓
+Enter Traditional Medicine Term
+  ↓
+Text / Voice Search
+  ↓
+Hybrid Terminology Matching
+  ↓
+Review Confidence Score
+  ↓
+View NAMASTE + ICD-11/TM2 Mapping
+  ↓
+Generate FHIR R4 Resource
+  ↓
+Copy / Integrate with EMR
+```
+
+### Administrator Workflow
+
+```text
+Login
+  ↓
+Upload Legacy CSV
+  ↓
+Bulk Terminology Processing
+  ↓
+Standardized Code Mapping
+  ↓
+Generate Excel Report
+  ↓
+Review Audit Records
+```
 
 ---
 
-## Credits
+# Example FHIR Output
 
-**The HexaDice Team:**
+A mapped diagnosis can be represented as a FHIR R4 `Condition` resource:
 
-* **Sruthika** - Team Leader, Backend Architecture & UI/UX Design (`@sruthika-19`)
-* **Yukthasree** - Frontend Integration & Component Logic
-* **Pradeeptha** - Database Architecture & Data Sanitization
-* **Raga Varshitha** - Search Logic & Fuzzy Matching Integration
-* **Swetha** - Research & Documentation
-* **Dharshini** - Product Strategy & Pitch Development
+```json
+{
+  "resourceType": "Condition",
+  "code": {
+    "coding": [
+      {
+        "system": "http://hl7.org/fhir/sid/icd-11",
+        "code": "EXAMPLE",
+        "display": "Standardized Diagnosis"
+      }
+    ],
+    "text": "Traditional Medicine Diagnosis"
+  }
+}
+```
 
-**Data & References:**
-Medical standardization mappings based on WHO ICD-11 / TM2 classifications, NAMASTE portal codes, and Ministry of Ayush guidelines.
+> **Note:** The actual coding system URI and terminology codes should correspond to the validated terminology source used by the deployment.
 
 ---
 
-## License
+# Data & Standards
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MedBridge is designed around established healthcare interoperability and terminology standards, including:
 
-```
+* **WHO ICD-11**
+* **WHO Traditional Medicine Module 2 (TM2)**
+* **AYUSH NAMASTE terminology**
+* **HL7 FHIR R4**
+* **ABDM interoperability principles**
 
-```
+The terminology dataset and mappings should be validated against the latest authoritative releases before clinical or production deployment.
+
+---
+
+# Team
+
+## The HexaDice
+
+| Member             | Responsibility                            |
+| ------------------ | ----------------------------------------- |
+| **Sruthika**       | Team Lead, Backend Architecture & UI/UX   |
+| **Yukthasree**     | Frontend Integration & Component Logic    |
+| **Pradeeptha**     | Database Architecture & Data Sanitization |
+| **Raga Varshitha** | Search Logic & Fuzzy Matching             |
+| **Swetha**         | Research & Documentation                  |
+| **Dharshini**      | Product Strategy & Pitch Development      |
+
+---
+
+# Development Highlights
+
+Through MedBridge, the team worked on:
+
+* Healthcare terminology interoperability
+* Semantic search and information retrieval
+* FHIR resource generation
+* REST API development
+* Authentication and role management
+* Bulk healthcare data processing
+* Audit logging
+* Progressive Web App development
+* Healthcare data standardization
+
+---
+
+# Future Scope
+
+Potential extensions include:
+
+* Multilingual Indian-language terminology support
+* Transformer-based medical terminology matching
+* Integration with hospital EMR/HIS systems
+* Cloud-based terminology services
+* Advanced consent and access-control mechanisms
+* Expanded terminology coverage
+* Automated terminology validation
+* Healthcare analytics and monitoring
+* Integration with additional ABDM ecosystem services
+
+---
+
+# License
+
+This project is licensed under the **MIT License**.
+
+---
+
+## Smart India Hackathon
+
+**MedBridge** was developed as a Smart India Hackathon project with the objective of improving interoperability between traditional medicine records and modern digital healthcare systems.
+
+> **Bridging Traditional Medicine and Digital Healthcare.**

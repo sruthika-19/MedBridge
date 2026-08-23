@@ -4,3 +4,6 @@ scikit-learn
 pandas
 openpyxl
 python-multipart
+python-dotenv
+requests
+groq

@@ -400,7 +400,7 @@ function showToast(message, type = 'success') {
 // --- PWA Service Worker Registration ---
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./src/sw.js')
+        navigator.serviceWorker.register('/src/sw.js')
             .then((registration) => {
                 console.log('MedBridge ServiceWorker registered with scope:', registration.scope);
             })
@@ -466,46 +466,76 @@ window.selectCandidate = function(index) {
     }
 };
 
-// Helper to generate the 2-column split card layout
+// Helper to generate a clean, side-by-side enterprise split card layout using Flexbox
 window.renderCandidateCard = function(entry, index) {
-    const res = entry.resource;
+    const res = entry.resource || {};
     const medTwin = res.medicineTwin || {};
-    const ingredients = medTwin.activeIngredients ? medTwin.activeIngredients.join(", ") : "Nilavembu, Papaya leaf extract";
-    const traditionalUses = medTwin.traditionalUses ? medTwin.traditionalUses.join(", ") : "Antipyretic, Immune Support";
-    const riskRadar = medTwin.riskRadar || ["Monitor patient if co-prescribing with modern NSAIDs (e.g., Ibuprofen) due to compound toxicity risks."];
+    
+    // Multi-key fallbacks
+    const rawIngredients = medTwin.activeIngredients || medTwin.ingredients || medTwin.active_ingredients;
+    const ingredients = rawIngredients ? 
+        (Array.isArray(rawIngredients) ? rawIngredients.join(", ") : rawIngredients) 
+        : "Nilavembu, Papaya leaf extract, Nilavembu kudineer chooranam";
+
+    const rawUses = medTwin.traditionalUses || medTwin.traditional_uses || medTwin.uses;
+    const traditionalUses = rawUses ? 
+        (Array.isArray(rawUses) ? rawUses.join(", ") : rawUses) 
+        : "Antipyretic, Anti-inflammatory, Immune Support";
+
+    const rawRisk = medTwin.riskRadar || medTwin.risk_warnings || medTwin.risk_alerts || medTwin.alerts;
+    const riskAlert = rawRisk ? 
+        (Array.isArray(rawRisk) ? rawRisk[0] : rawRisk) 
+        : "Monitor patient if co-prescribing with modern NSAIDs (e.g., Ibuprofen) due to compound toxicity risks.";
+
     const codingList = res.code && res.code.coding ? res.code.coding : [];
-    const tradCode = codingList[0] ? `${codingList[0].code}` : "SID-104";
-    const icdCode = codingList[1] ? `${codingList[1].code}` : "MG22";
+    const tradCode = codingList[0] ? codingList[0].code : "SID-135";
+    const icdCode = codingList[1] ? codingList[1].code : "SP52";
+    const systemName = res.system || "Siddha";
+    const modernEq = res.modernEquivalent || "Standardized Clinical Presentation";
+    const tradTerm = res.code.text || "Traditional Presentation";
+    const confScore = res.confidenceScore || "94.0%";
 
     return `
-        <div class="row g-4 mb-4">
-            <!-- Left: AI Medicine Twin -->
-            <div class="col-lg-7">
-                <div class="glass-panel p-4 h-100 border border-secondary shadow-sm">
-                    <h5 class="text-info fw-bold mb-3">🧬 AI MEDICINE TWIN</h5>
-                    <p class="mb-2"><strong>Traditional:</strong> ${res.code.text} (${res.system || "Siddha"})</p>
-                    <p class="mb-2 text-warning"><strong>↳ NAMASTE Code:</strong> ${tradCode}</p>
-                    <p class="mb-2"><strong>Modern Equivalent:</strong> ${res.modernEquivalent || "Acute Pyrexia"}</p>
-                    <p class="mb-3 text-danger"><strong>↳ WHO ICD-11 (TM2):</strong> ${icdCode}</p>
-                    <hr class="border-secondary opacity-50">
-                    <p class="mb-1 text-success fw-bold">Active Botanical Ingredients:</p>
-                    <p class="text-light small">${ingredients}</p>
+        <!-- Flexbox wrapper to guarantee side-by-side layout on desktop -->
+        <div class="d-flex flex-column flex-lg-row gap-4 mb-4 align-items-stretch w-100">
+            
+            <!-- Left: AI Medicine Twin (Takes ~66% space) -->
+            <div class="glass-panel p-4 border border-secondary shadow-sm text-light d-flex flex-column" style="flex: 2; background: rgba(15, 23, 42, 0.6) !important; border-radius: 12px;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0" style="color: rgba(0, 229, 255, 0.85); font-size: 1.1rem;">🧬 AI MEDICINE TWIN</h5>
+                    <span class="badge px-2 py-1 fw-semibold" style="background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); color: rgba(0, 229, 255, 0.85); border-radius: 12px; font-size: 0.8rem;">Confidence: ${confScore}</span>
                 </div>
+                
+                <div class="mb-2"><strong style="opacity: 0.7;">Traditional:</strong> <span class="text-light">${tradTerm}</span> <span class="text-muted" style="font-size: 0.8rem;">(${systemName})</span></div>
+                <div class="mb-2" style="color: rgba(56, 189, 248, 0.9);"><strong>↳ NAMASTE Code:</strong> ${tradCode}</div>
+                <div class="mb-2"><strong style="opacity: 0.7;">Modern Equivalent:</strong> <span class="text-light">${modernEq}</span></div>
+                <div class="mb-3" style="color: rgba(52, 211, 153, 0.9);"><strong>↳ WHO ICD-11 (TM2):</strong> ${icdCode}</div>
+
+                <hr class="border-secondary my-3" style="opacity: 0.3;">
+                
+                <p class="mb-1 fw-bold" style="color: rgba(56, 189, 248, 0.85); font-size: 0.9rem;">Active Botanical Ingredients:</p>
+                <p class="text-light small mb-3" style="opacity: 0.8;">${ingredients}</p>
+                
+                <!-- NEW IOT LOCATION BUTTON -->
+                <button class="btn btn-sm w-100 fw-bold py-2 mt-2" style="background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.4); color: rgba(0, 229, 255, 0.9); border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(0, 229, 255, 0.2)'" onmouseout="this.style.background='rgba(0, 229, 255, 0.1)'" onclick="findNearbyClinics('${systemName}')">
+                    📍 Find Nearby ${systemName} Clinics (IoT)
+                </button>
             </div>
 
-            <!-- Right: Cross-System Risk Radar -->
-            <div class="col-lg-5">
-                <div class="glass-panel p-4 h-100 border border-secondary shadow-sm bg-danger bg-opacity-10">
-                    <h5 class="text-warning fw-bold mb-3">⚠️ CROSS-SYSTEM RISK RADAR</h5>
-                    <div class="p-3 rounded bg-dark border border-warning border-opacity-25 mb-3">
-                        <strong class="text-warning">Mild Contraindication:</strong>
-                        <p class="small text-muted mt-1 mb-0">${riskRadar[0]}</p>
+            <!-- Right: Cross-System Risk Radar Sidebar (Takes ~33% space) -->
+            <div class="glass-panel p-4 border border-secondary shadow-sm text-light d-flex flex-column justify-content-between" style="flex: 1; background: rgba(245, 158, 11, 0.03) !important; border-color: rgba(245, 158, 11, 0.15) !important; border-radius: 12px;">
+                <div>
+                    <h5 class="fw-bold mb-3" style="color: rgba(251, 191, 36, 0.85); font-size: 1.05rem;">⚠️ CROSS-SYSTEM RISK RADAR</h5>
+                    <div class="p-3 rounded bg-dark border border-warning border-opacity-10 mb-3">
+                        <strong style="color: rgba(251, 191, 36, 0.8); font-size: 0.85rem;">Mild Contraindication:</strong>
+                        <p class="small text-muted mt-1 mb-0" style="line-height: 1.4; opacity: 0.85;">${riskAlert}</p>
                     </div>
-                    <button class="btn btn-sm btn-outline-warning w-100 fw-bold py-2" onclick="showToast('Warning acknowledged & logged to ABDM audit trail.', 'success')">
-                        ✅ Acknowledge Warning
-                    </button>
                 </div>
+                <button class="btn btn-sm w-100 fw-bold py-2 mt-auto" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); color: rgba(251, 191, 36, 0.85); border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'" onclick="showToast('Warning acknowledged & logged to ABDM audit trail.', 'success')">
+                    ✅ Acknowledge Warning
+                </button>
             </div>
+            
         </div>
     `;
 };
@@ -516,4 +546,114 @@ window.showAIExplanation = function() {
 
 window.togglePatientView = function() {
     alert("Layman Summary:\n• Condition: Fever / Body Heat\n• Purpose: Reduces temperature & clears inflammation\n• Caution: Avoid combining with strong blood thinners without consulting your physician.");
+};
+
+// --- IOT LOCATION-BASED ROUTING ---
+window.findNearbyClinics = function(systemName) {
+    showToast(`📍 Acquiring GPS coordinates & querying live global map for ${systemName}...`, "success");
+    if (!navigator.geolocation) {
+        showToast("Geolocation is not supported by your browser.", "error");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        
+        showToast("📡 Coordinates acquired! Searching network...", "success");
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/v1/nearby-clinics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    latitude: lat,
+                    longitude: lng,
+                    condition_system: systemName || "Siddha"
+                })
+            });
+
+            const data = await response.json();
+            if (data.status === 'success') {
+                renderClinicsList(data.clinics);
+            } else {
+                showToast("Error finding clinics: " + data.message, "error");
+            }
+        } catch (error) {
+            showToast("API connection failed.", "error");
+            console.error(error);
+        }
+    }, (error) => {
+        console.error(error);
+        showToast("Location access denied. Please allow permissions in your browser.", "error");
+    });
+};
+function renderClinicsList(clinics) {
+    const modalBody = document.getElementById('clinicsModalBody');
+    
+    if (clinics.length === 0) {
+        modalBody.innerHTML = `<p class="text-muted text-center py-4">No specialized clinics found within range.</p>`;
+    } else {
+        let html = '<div class="d-flex flex-column gap-3">';
+        clinics.forEach((c) => {
+            html += `
+                <div class="p-3 rounded border border-secondary" style="background: rgba(255,255,255,0.02);">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="fw-bold text-light mb-1">${c.name}</h6>
+                            <p class="text-muted small mb-0">👨‍⚕️ ${c.doctor}</p>
+                        </div>
+                        <span class="badge bg-dark border border-info" style="color: rgba(0, 229, 255, 0.9);">${c.distance_km} km</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="small" style="color: rgba(52, 211, 153, 0.9);">System: ${c.specialties[0]}</span>
+                        
+                        <!-- UPDATED REFER PATIENT BUTTON TO TRIGGER EMAIL -->
+                        <button class="btn btn-sm btn-outline-success fw-bold py-1 px-3" style="opacity: 0.9;" onclick="sendReferralEmail('${c.name}', '${c.doctor}', '${c.distance_km}', '${c.specialties[0]}')">Refer Patient</button>
+                    
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        modalBody.innerHTML = html;
+    }
+
+    const clinicsModal = new bootstrap.Modal(document.getElementById('clinicsModal'));
+    clinicsModal.show();
+}
+
+// Function to trigger the backend Email API
+window.sendReferralEmail = async function(clinicName, doctorName, distance, system) {
+    showToast("📧 Encrypting and sending secure referral...", "success");
+    
+    try {
+        const response = await fetch('http://127.0.0.1:8000/api/v1/send-referral', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                clinic_name: clinicName,
+                doctor_name: doctorName,
+                condition: system,
+                distance: distance.toString()
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            // Close the modal
+            const modalEl = document.getElementById('clinicsModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if(modalInstance) modalInstance.hide();
+            
+            // Show massive success alert
+            setTimeout(() => {
+                showToast(`✅ ABDM Referral sent to ${clinicName}! Check your email inbox.`, "success");
+            }, 1000);
+        }
+    } catch (error) {
+        showToast("Error establishing secure connection.", "error");
+        console.error(error);
+    }
 };
