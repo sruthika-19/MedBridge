@@ -3,6 +3,7 @@ import csv
 import io
 import datetime
 import pandas as pd
+from ai_scribe import extract_and_bundle_notes
 from fastapi import FastAPI, BackgroundTasks, File, UploadFile
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +16,9 @@ app = FastAPI(title = "MedBridge API")
 app.mount("/src", StaticFiles(directory="src"), name="src")
 class MappingRequest(BaseModel):
     term: str
+
+class ScribeRequest(BaseModel):
+    notes: str
 
 app.add_middleware(
     CORSMiddleware,
@@ -122,3 +126,11 @@ def get_audit_logs():
             logs = f.read()
         return PlainTextResponse(logs)
     return "No audit logs found yet. Perform a search to generate logs."
+
+@app.post("/api/v1/ai-scribe", tags=["Advanced AI Layer"])
+def ai_clinical_scribe(request: ScribeRequest, background_tasks: BackgroundTasks = None):
+    if background_tasks:
+        background_tasks.add_task(log_audit, f"AI Scribe processed notes (Length: {len(request.notes)})")
+    
+    result = extract_and_bundle_notes(request.notes)
+    return result
