@@ -1,63 +1,118 @@
-ID,SYSTEM,TRADITIONAL TERM,NAMASTE CODE,TM2 CODE,ALIASES
-1,Ayurveda,jvara,AYU-101,SP51,fever|pyrexia|jwaram
-2,Siddha,suram,SID-045,SL41,fever|jwaram
-3,Unani,humma,UNA-090,SP51,fever
-4,Ayurveda,kasa,AYU-112,SL41,cough|bronchitis|kaasa
-5,Ayurveda,shwasa,AYU-113,SL42,asthma|dyspnea|shwas
-6,Siddha,irumal,SID-046,SL41,cough
-7,Unani,su-al,UNA-091,SL41,cough
-8,Ayurveda,hikka,AYU-114,SM74,hiccups
-9,Ayurveda,pandu,AYU-115,SL80,anemia
-10,Siddha,manjal noi,SID-047,SM20,jaundice
-11,Unani,yarqan,UNA-092,SM20,jaundice
-12,Ayurveda,aruchi,AYU-116,SM10,anorexia|loss of appetite
-13,Ayurveda,ajirana,AYU-117,SM10,indigestion
-14,Siddha,mandham,SID-048,SM10,indigestion
-15,Unani,su-e-hazm,UNA-093,SM10,indigestion
-16,Ayurveda,atisara,AYU-118,SM30,diarrhea|gastroenteritis
-17,Siddha,kazhichal,SID-049,SM30,kaichal|kaaichal|diarrhea
-18,Unani,ishal,UNA-094,SM30,diarrhea
-19,Ayurveda,grahani,AYU-119,SM40,malabsorption|IBS
-20,Ayurveda,chardi,AYU-120,SM70,vomiting|nausea
-21,Siddha,vanti,SID-050,SM70,vomiting
-22,Unani,qai,UNA-095,SM70,vomiting
-23,Ayurveda,mutraghata,AYU-121,SM80,urinary retention
-24,Siddha,neerizhivu,SID-051,SN10,diabetes
-25,Unani,zayabetus,UNA-096,SN10,diabetes
-26,Ayurveda,prameha,AYU-122,SN10,diabetes|metabolic disorder
-27,Ayurveda,sandhigata vata,AYU-123,SP12,osteoarthritis
-28,Siddha,azhal keel vayu,SID-052,SP12,osteoarthritis
-29,Unani,waja-ul-mafasil,UNA-097,SP12,arthritis|joint pain
-30,Ayurveda,gridhrasi,AYU-124,SP20,sciatica
-31,Ayurveda,ardita,AYU-125,SP20,facial paralysis
-32,Siddha,ajal kirkrippu,SID-053,SK00,dermatitis
-33,Unani,sadra-o-dwar,UNA-098,SK00,skin disorder
-34,Ayurveda,kandu,AYU-126,SK52,itching|pruritus
-35,Ayurveda,kampavata,AYU-127,SN40,parkinsonism|tremors
-36,Siddha,sori,SID-054,SN40,scabies|itching
-37,Unani,hikka-e-jild,UNA-099,SN40,skin inflammation
-38,Ayurveda,dadru,AYU-128,SN50,ringworm|tinea
-39,Siddha,vellai noi,SID-055,SN60,leucorrhea
-40,Unani,bars,UNA-100,SN60,vitiligo
-41,Ayurveda,shotha,AYU-129,ME84,edema|inflammatory swelling
-42,Siddha,neeradai,SID-056,CA00,cold|rhinitis|nasal congestion
-43,Ayurveda,Raktapitta,AYU-130,KD00,bleeding disorder|thrombocytopenia
-44,Siddha,Gunmam,SID-057,SM10,gastritis|acidity
-45,Unani,Nazla,UNA-101,CA00,common cold|catarrh
-46,Ayurveda,Vatarakta,AYU-131,SP12,gout
-47,Siddha,Karappan,SID-058,SK50,eczema|dermatitis
-48,Unani,Warm,UNA-102,ME84,inflammation|swelling
-49,Ayurveda,Pakshaghata,AYU-132,SK00,stroke|paralysis
-50,Siddha,Soolai,SID-059,SP12,colic|abdominal pain
-51,Unani,Uqr,UNA-103,SN60,infertility
-52,Ayurveda,Unmada,AYU-133,SK00,psychosis|mental disorder
-53,Siddha,Vali noi,SID-060,SK00,neurological disorder
-54,Unani,Khafaqan,UNA-104,SK00,palpitation
-55,Ayurveda,Shirashoola,AYU-134,SK00,headache|migraine
-56,Siddha,Siraneer,SID-061,SM80,urinary dysfunction
-57,Unani,Suda,UNA-105,SK00,headache
-58,Ayurveda,Bhagna,AYU-135,SP12,bone fracture
-59,Siddha,Ootha noi,SID-062,ME84,dropsy|edema
-60,Unani,Amraz-e-Jild,UNA-106,SK50,skin disease
-61,Ayurveda,Ashmari,AYU-136,SM80,kidney stones|renal calculi
-62,Siddha,Kayam,SID-063,SK00,fatigue|body weakness
+id,system,traditional_term,namaste_code,tm2_code,aliases
+1,AYURVEDA,jvara,AYU-101,SP51,"fever | pyrexia | suram"
+2,AYURVEDA,Accumulation of Vata pattern,AAA-1,SR11,"Vatasanchayah | Vata"
+3,AYURVEDA,amlapitta,AYU-104,MD81,"hyperacidity | gastritis | acid reflux"
+4,AYURVEDA,sandhigata vata,AYU-110,FA00,"osteoarthritis | joint pain | knee pain"
+5,AYURVEDA,raktapitta,AYU-115,BD40,"bleeding disorder | hemorrhage"
+6,AYURVEDA,kasa,AYU-120,CA20,"cough | bronchitis"
+7,AYURVEDA,shwasa,AYU-125,CA40,"asthma | breathing difficulty | dyspnea"
+8,AYURVEDA,prameha,AYU-130,5A10,"diabetes | urinary disorders | madhumeha"
+9,AYURVEDA,pakshaghata,AYU-140,8B20,"paralysis | hemiplegia | stroke"
+10,AYURVEDA,madathyaya,AYU-150,6C40,"alcoholism | withdrawal symptoms"
+11,SIDDHA,neerizhivu,SID-045,5A10,"diabetes | zayabetus | madhumeha"
+12,SIDDHA,vatarakta,SID-048,FB20,"gout | joint inflammation | hyperuricemia"
+13,SIDDHA,suram,SID-050,SP51,"fever | viral infection"
+14,SIDDHA,vali noi,SID-055,ME80,"neuralgia | rheumatism | body ache"
+15,SIDDHA,kamala,SID-060,DB90,"jaundice | liver disorder"
+16,UNANI,nisyan,UNA-012,8A00,"amnesia | memory loss | cognitive decline"
+17,UNANI,ziabetus,UNA-018,5A10,"diabetes mellitus | excessive thirst"
+18,UNANI,zat ul janb,UNA-025,CA22,"pleurisy | chest infection"
+19,UNANI,sozish e qulb,UNA-030,BC41,"cardiac inflammation | heart pain"
+20,UNANI,yarqan,UNA-035,DB90,"jaundice | yellowish discoloration"
+21,AYURVEDA,amavata,AYU-112,FA20,"rheumatoid arthritis | joint swelling | stiffness"
+22,AYURVEDA,mutraghata,AYU-135,GB42,"urinary retention | bladder obstruction"
+23,AYURVEDA,unmada,AYU-155,6A00,"psychiatric disorder | mental illness | psychosis"
+24,AYURVEDA,apasmara,AYU-160,8A60,"epilepsy | seizure disorder | fits"
+25,AYURVEDA,shotha,AYU-165,ME84,"edema | inflammation | swelling"
+26,AYURVEDA,grahani,AYU-170,DD90,"irritable bowel syndrome | IBS | malabsorption"
+27,AYURVEDA,pandu,AYU-180,3A00,"anemia | pallor | iron deficiency"
+28,AYURVEDA,vrana,AYU-185,EA90,"ulcer | wound | tissue damage"
+29,AYURVEDA,mutrakricchra,AYU-190,GB40,"dysuria | painful urination"
+30,AYURVEDA,vatarakta,AYU-195,FB20,"gout | hyperuricemia"
+31,SIDDHA,peruntiratchi,SID-065,5B81,"obesity | weight gain | adiposity"
+32,SIDDHA,vayu,SID-070,DD50,"flatulence | gas | bloating"
+33,SIDDHA,pitham,SID-075,DB98,"biliary imbalance | hyperacidity"
+34,SIDDHA,kapam,SID-080,CA00,"congestion | phlegm accumulation"
+35,SIDDHA,karappan,SID-085,EA80,"eczema | chronic dermatitis | skin eruption"
+36,SIDDHA,kirumi,SID-090,1F20,"parasitic infection | worms"
+37,SIDDHA,peruvayi,SID-095,DB30,"hemorrhoids | piles"
+38,UNANI,humma,UNA-040,SP51,"fever | pyrexia | elevated temperature"
+39,UNANI,zat ur riyah,UNA-045,DD50,"flatulent colic | abdominal wind"
+40,UNANI,warm e kabid,UNA-050,DB91,"hepatitis | liver inflammation"
+41,UNANI,niqris,UNA-055,FB20,"gout | painful joint condition"
+42,UNANI,qabz,UNA-060,DD70,"constipation | sluggish bowel"
+43,UNANI,sozish e bawaseer,UNA-065,DB30,"piles | inflamed hemorrhoids"
+44,UNANI,dard e shaqaiq,UNA-070,8A80,"migraine | recurring headache"
+45,AYURVEDA,atisara,AYU-201,DA90,"diarrhea | loose stools | dysentery"
+46,AYURVEDA,chhardi,AYU-205,MD90,"vomiting | nausea | emesis"
+47,AYURVEDA,shoola,AYU-210,ME82,"colic | abdominal pain | spasm"
+48,AYURVEDA,kamala,AYU-215,DB90,"jaundice | yellowish skin"
+49,AYURVEDA,vidradhi,AYU-220,EA91,"abscess | boil | internal swelling"
+50,AYURVEDA,visarpa,AYU-225,EA81,"erysipelas | herpes | spreading skin lesion"
+51,AYURVEDA,kshaya,AYU-230,1B10,"tuberculosis | wasting disease | pulmonary consumption"
+52,AYURVEDA,netraroga,AYU-235,9A00,"eye disorder | vision problem"
+53,SIDDHA,pitha noi,SID-100,MD81,"bilious disorder | hyperacidity"
+54,SIDDHA,vali azhal noi,SID-105,FA20,"rheumatic complaint | joint pain"
+55,SIDDHA,solai,SID-110,EA82,"ulcerative skin condition | boils"
+56,SIDDHA,gunmam,SID-115,DD80,"gastric ulcer | severe gastritis"
+57,SIDDHA,muttam,SID-120,EA80,"psoriasis | scaling skin disease"
+58,UNANI,warm e meda,UNA-075,DD80,"gastritis | inflammation of stomach"
+59,UNANI,zoof e ishtaha,UNA-080,MD91,"loss of appetite | anorexia"
+60,UNANI,haiza,UNA-085,DA90,"cholera | acute watery diarrhea"
+61,UNANI,irq un nisa,UNA-090,ME80,"sciatica | lower back nerve pain"
+62,UNANI,shaqaiq,UNA-095,8A80,"migraine | hemicrania"
+63,AYURVEDA,arshas,AYU-240,DB30,"piles | hemorrhoids"
+64,AYURVEDA,bhagandara,AYU-245,DB34,"fistula in ano"
+65,AYURVEDA,ashmari,AYU-250,GB20,"kidney stone | urinary calculus"
+66,AYURVEDA,granthi,AYU-255,2E60,"cyst | benign tumor | nodule"
+67,AYURVEDA,arbuda,AYU-260,2B30,"tumor | malignancy | growth"
+68,AYURVEDA,apachi,AYU-265,4A40,"lymphadenitis | scrofula"
+69,AYURVEDA,galaganda,AYU-270,5A00,"goiter | thyroid swelling"
+70,AYURVEDA,shleepada,AYU-275,1F40,"filariasis | elephantiasis"
+71,AYURVEDA,yuvana pidika,AYU-280,ED80,"acne | pimples | facial eruption"
+72,AYURVEDA,dadru,AYU-285,EA82,"ringworm | fungal skin infection"
+73,AYURVEDA,kushta,AYU-290,EA80,"chronic skin disease | leprosy"
+74,AYURVEDA,udara,AYU-295,DD52,"ascites | abdominal distension"
+75,AYURVEDA,mukharoga,AYU-300,DA00,"oral disorder | stomatitis | mouth ulcer"
+76,AYURVEDA,karnaroga,AYU-305,AB10,"ear disorder | tinnitus | earache"
+77,AYURVEDA,shiroroga,AYU-310,8A80,"headache | cranial disorder"
+78,AYURVEDA,klama,AYU-315,MG20,"exhaustion | fatigue without exertion"
+79,AYURVEDA,tandra,AYU-320,MB40,"drowsiness | stupor"
+80,AYURVEDA,bhrama,AYU-325,8C80,"giddiness | vertigo | dizziness"
+81,AYURVEDA,mada,AYU-330,6C40,"intoxication | delirium"
+82,AYURVEDA,moorchha,AYU-335,8E00,"fainting | syncope"
+83,SIDDHA,pitha soolai,SID-125,ME82,"bilious colic | gastric pain"
+84,SIDDHA,vali soolai,SID-130,ME83,"rheumatic pain | gas pain"
+85,SIDDHA,kabha suram,SID-135,SP52,"phlegmatic fever | catarrhal fever"
+86,SIDDHA,ottadai,SID-140,EA85,"allergic dermatitis | hives"
+87,SIDDHA,sori,SID-145,EA81,"itch | pruritus | scabies"
+88,SIDDHA,padarthamarai,SID-150,EA80,"psoriasis | scaly skin"
+89,SIDDHA,megakkappu,SID-155,GB00,"venereal disorder | urinary infection"
+90,SIDDHA,sarkarai noi,SID-160,5A10,"diabetes | madhumeha"
+91,SIDDHA,neer kattu,SID-165,GB42,"urinary retention | ischuria"
+92,SIDDHA,raktha pitha noi,SID-170,BD40,"bleeding tendency | hemorrhage"
+93,SIDDHA,kandamai,SID-175,CA00,"throat infection | tonsillitis"
+94,SIDDHA,moolavadi,SID-180,DB30,"hemorrhoids | piles"
+95,SIDDHA,thalai vali,SID-185,8A80,"headache | migraine"
+96,SIDDHA,mantha noi,SID-190,DD90,"indigestion | dyspepsia"
+97,SIDDHA,valli noi,SID-195,FA00,"joint stiffness | arthritis"
+98,UNANI,zat ul rimah,UNA-100,CA20,"acute respiratory infection"
+99,UNANI,warm e tahal,UNA-105,DB92,"splenomegaly | spleen enlargement"
+100,UNANI,warm e qalb,UNA-110,BC41,"myocarditis | heart inflammation"
+101,UNANI,zoof e qalb,UNA-115,BC80,"cardiac weakness | heart failure"
+102,UNANI,sauq e hayat,UNA-120,BA00,"vital exhaustion | fatigue"
+103,UNANI,qoulanj,UNA-125,DD71,"colitis | colon spasm"
+104,UNANI,yarqan e mufsid,UNA-130,DB90,"obstructive jaundice"
+105,UNANI,iltehab e meda,UNA-135,DD80,"gastritis | stomach inflammation"
+106,UNANI,iltehab e amaa,UNA-140,DA91,"enteritis | intestinal inflammation"
+107,UNANI,khanasir,UNA-145,EA90,"gangrene | localized tissue necrosis"
+108,UNANI,bavaseer dami,UNA-150,DB30,"bleeding piles | hemorrhagic hemorrhoids"
+109,UNANI,bavaseer badi,UNA-155,DB31,"blind piles | flatulent piles"
+110,UNANI,shshaqeeq,UNA-160,8A80,"migraine | hemicrania"
+111,UNANI,duwar,UNA-165,8C80,"vertigo | dizziness"
+112,UNANI,saraa,UNA-170,8A60,"epilepsy | falling sickness"
+113,UNANI,sauq e nafs,UNA-175,CA22,"asthma | shortness of breath"
+114,UNANI,khunaq,UNA-180,CA02,"diphtheria | severe sore throat"
+115,UNANI,isqat e hamal,UNA-185,GA03,"miscarriage | abortion"
+116,UNANI,kabir e jigar,UNA-190,DB91,"hepatomegaly | liver enlargement"
+117,UNANI,sakhti e rugu,UNA-195,BB40,"arteriosclerosis | vessel hardening"

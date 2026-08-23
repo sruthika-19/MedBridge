@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from search_engine import search_disease
 from fastapi.responses import StreamingResponse, PlainTextResponse
+from typing import Optional
 
 app = FastAPI(title = "MedBridge API")
 app.mount("/src", StaticFiles(directory="src"), name="src")
@@ -37,15 +38,19 @@ def home():
     tags=["EMR Integration"]
 )
 
-def get_icd_code(disease_name: str, background_tasks: BackgroundTasks):
-    background_tasks.add_task(log_audit, disease_name)
-    result = search_disease(disease_name)
+def get_icd_code(disease_name: str, system: Optional[str] = None, background_tasks: BackgroundTasks = None):
+    if background_tasks:
+        background_tasks.add_task(log_audit, f"{disease_name} (System: {system})")
+    
+    result = search_disease(disease_name, system_filter=system)
     return result
 
 @app.post("/api/v1/map")
-def map_term(request: MappingRequest, background_tasks: BackgroundTasks):
-    background_tasks.add_task(log_audit, request.term)
-    result = search_disease(request.term)
+def map_term(request: MappingRequest, system: Optional[str] = None, background_tasks: BackgroundTasks = None):
+    if background_tasks:
+        background_tasks.add_task(log_audit, f"{request.term} (System: {system})")
+        
+    result = search_disease(request.term, system_filter=system)
     return result
 
 @app.post("/api/v1/bulk-map", tags=["Enterprise Features"])
