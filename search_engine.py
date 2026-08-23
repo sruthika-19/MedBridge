@@ -3,6 +3,7 @@ import difflib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from who_service import search_who_api
+from medicine_twin import get_medicine_twin_data
 
 DB_FILE = "mappings.db"
 
@@ -50,14 +51,14 @@ def search_disease(term_query, system_filter=None):
 
     documents = []
     doc_row_mapping = []
-    #term_list = []
+    
     for row in rows:
         trad_term = row[1]
         aliases = row[4] or ""
         combined_text = f"{trad_term} {aliases.replace('|', ' ')}"
         documents.append(combined_text)
         doc_row_mapping.append(row)
-        #term_list.append(trad_term.lower())
+        
     # Compute TF-IDF and Cosine Similarity across local database
     vectorizer = TfidfVectorizer(lowercase=True, stop_words='english')
     tfidf_matrix = vectorizer.fit_transform(documents)
@@ -190,10 +191,20 @@ def build_fhir_payload(row, confidence):
 
     modern_term = modern_mapping.get(trad_term.lower(), "Standardized Clinical Presentation")
 
+    twin_data = get_medicine_twin_data(trad_term)
+
     return {
         "resourceType": "Condition",
         "confidenceScore": f"{confidence}%",
         "modernEquivalent": modern_term,
+        
+        # 🚀 INJECTED: The Medicine Twin & Risk Radar Payload
+        "medicineTwin": {
+            "activeIngredients": twin_data.get("ingredients", []),
+            "traditionalUses": twin_data.get("traditional_uses", []),
+            "riskRadar": twin_data.get("risk_warnings", [])
+        },
+        
         "clinicalStatus": {
             "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
         },

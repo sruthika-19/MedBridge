@@ -1,68 +1,71 @@
 import os
 import json
-from google import genai
-from google.genai import types
+from groq import Groq
 from search_engine import search_disease
 from dotenv import load_dotenv
 
 load_dotenv()
-api_key = os.getenv("GEMINI_API_KEY") 
 
-if not api_key:
-    print("CRITICAL ERROR: GEMINI_API_KEY is missing! Check your .env file.")
+groq_api_key = os.getenv("GROQ_API_KEY")
+if not groq_api_key:
+    print("CRITICAL ERROR: GROQ_API_KEY is missing! Check your .env file.")
 
-# NEW: Initialize the client using the new SDK
-client = genai.Client(api_key=api_key)
+client = Groq(api_key=groq_api_key)
 
 def extract_and_bundle_notes(doctor_paragraph: str):
     prompt = f"""
     You are an expert clinical AI assistant. Extract ONLY the medical conditions, diseases, and symptoms from the following text.
     Do NOT extract general words, timeframes, or locations (like 'clinic', 'weeks', 'severe', 'patient').
     
-    You MUST return a valid JSON array of strings representing the extracted terms.
-    Example: ["jvara", "kasa", "prameha"]
+    You MUST return a valid JSON object containing an array of strings under the key "terms".
+    Example: {{"terms": ["jvara", "kasa", "prameha"]}}
     
     Text: "{doctor_paragraph}"
     """
     
     try:
-        # NEW: generate_content uses the client.models syntax now
-        response = client.models.generate_content(
-            model='gemini-3.6-flash', 
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json"
-            )
+        completion = client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {"role": "system", "content": "You are a precise clinical terminology extraction assistant that outputs strictly valid JSON with a 'terms' key."},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.1
         )
         
-        raw_text = response.text.strip()
-        print(f"RAW AI RESPONSE: {raw_text}") 
+        raw_text = completion.choices[0].message.content.strip()
+        print(f"RAW GROQ RESPONSE: {raw_text}") 
         
-        # Strip Markdown if the AI stubbornly includes it
-        if raw_text.startswith("```"):
-            raw_text = raw_text.replace("```json", "").replace("```", "").strip()
-            print(f"CLEANED TEXT: {raw_text}")
-
-        # Safely parse the JSON
-        terms = json.loads(raw_text)
+        parsed_data = json.loads(raw_text)
         
-        if isinstance(terms, dict):
-            for key, val in terms.items():
-                if isinstance(val, list):
-                    terms = val
-                    break
-            else:
-                terms = []
+        # Extract terms safely from JSON response
+        if isinstance(parsed_data, list):
+            terms = parsed_data
+        elif isinstance(parsed_data, dict):
+            terms = parsed_data.get("terms", [])
+            if not terms:
+                for key, val in parsed_data.items():
+                    if isinstance(val, list):
+                        terms = val
+                        break
+        else:
+            terms = []
 
     except Exception as e:
         error_message = str(e)
-        print(f"AI Extraction Error: {error_message}")
-        return {
-            "status": "error",
-            "extractedTerms": [],
-            "message": f"AI FAILED: {error_message}",
-            "bundle": None
-        }
+        print(f"Groq Extraction Error: {error_message}")
+        # Smart fallback to local keyword matching if any network glitch occurs
+        known_terms = ["jvara", "suram", "kasa", "irumal", "sandhigata vata", "prameha", "shoola", "gunmam", "pandu", "anxiety"]
+        terms = [t for t in known_terms if t in doctor_paragraph.lower()]
+        
+        if not terms:
+            return {
+                "status": "error",
+                "extractedTerms": [],
+                "message": f"AI FAILED: {error_message}",
+                "bundle": None
+            }
 
     fhir_entries = []
     
