@@ -108,89 +108,6 @@ if (diseaseInput && searchButton) {
         });
 }
 
-// Switch between Top 3 candidates when pills are clicked
-window.selectCandidate = function(index) {
-    const entry = window.currentEntries[index];
-    const container = document.getElementById("activeCandidateView");
-    if (container && entry) {
-        container.innerHTML = renderCandidateCard(entry, index);
-        showToast(`Switched to candidate #${index + 1}`, 'info');
-    }
-};
-
-// Helper to generate a clean, side-by-side enterprise split card layout using CSS Grid
-window.renderCandidateCard = function(entry, index) {
-    const res = entry.resource || {};
-    const medTwin = res.medicineTwin || {};
-    
-    // Multi-key fallbacks
-    const rawIngredients = medTwin.activeIngredients || medTwin.ingredients || medTwin.active_ingredients;
-    const ingredients = rawIngredients ? 
-        (Array.isArray(rawIngredients) ? rawIngredients.join(", ") : rawIngredients) 
-        : "Nilavembu, Papaya leaf extract, Nilavembu kudineer chooranam";
-
-    const rawUses = medTwin.traditionalUses || medTwin.traditional_uses || medTwin.uses;
-    const traditionalUses = rawUses ? 
-        (Array.isArray(rawUses) ? rawUses.join(", ") : rawUses) 
-        : "Antipyretic, Anti-inflammatory, Immune Support";
-
-    const rawRisk = medTwin.riskRadar || medTwin.risk_warnings || medTwin.risk_alerts || medTwin.alerts;
-    const riskAlert = rawRisk ? 
-        (Array.isArray(rawRisk) ? rawRisk[0] : rawRisk) 
-        : "Monitor patient if co-prescribing with modern NSAIDs (e.g., Ibuprofen) due to compound toxicity risks.";
-
-    const codingList = res.code && res.code.coding ? res.code.coding : [];
-    const tradCode = codingList[0] ? codingList[0].code : "SID-135";
-    const icdCode = codingList[1] ? codingList[1].code : "SP52";
-    const systemName = res.system || "Siddha";
-    const modernEq = res.modernEquivalent || "Standardized Clinical Presentation";
-    const tradTerm = res.code.text || "Traditional Presentation";
-    const confScore = res.confidenceScore || "94.0%";
-
-    return `
-        <!-- Pure CSS Grid wrapper to force side-by-side layout -->
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; align-items: stretch;">
-            
-            <!-- Left: AI Medicine Twin -->
-            <div class="glass-panel p-4 h-100 border border-secondary shadow-sm text-light" style="background: rgba(15, 23, 42, 0.6) !important; border-radius: 12px;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0" style="color: rgba(0, 229, 255, 0.85); font-size: 1.1rem;">🧬 AI MEDICINE TWIN & INTEROPERABILITY</h5>
-                    <span class="badge px-2 py-1 fw-semibold" style="background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); color: rgba(0, 229, 255, 0.85); border-radius: 12px; font-size: 0.8rem;">Confidence: ${confScore}</span>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.9rem; opacity: 0.9;">
-                    <div><strong style="opacity: 0.7;">Traditional Term:</strong> <span class="text-light">${tradTerm}</span> <span class="text-muted" style="font-size: 0.8rem;">(${systemName})</span></div>
-                    <div style="color: rgba(56, 189, 248, 0.9);"><strong>NAMASTE Code:</strong> ${tradCode}</div>
-                    <div><strong style="opacity: 0.7;">Modern Equivalent:</strong> <span class="text-light">${modernEq}</span></div>
-                    <div style="color: rgba(52, 211, 153, 0.9);"><strong>WHO ICD-11 (TM2):</strong> ${icdCode}</div>
-                </div>
-
-                <hr class="border-secondary my-3" style="opacity: 0.3;">
-                
-                <p class="mb-1 fw-bold" style="color: rgba(56, 189, 248, 0.85); font-size: 0.9rem;">Active Botanical Ingredients:</p>
-                <p class="text-light small mb-3" style="opacity: 0.8;">${ingredients}</p>
-                
-                <p class="mb-1 fw-bold text-muted" style="font-size: 0.9rem;">Traditional Clinical Uses:</p>
-                <p class="text-muted small mb-0">${traditionalUses}</p>
-            </div>
-
-            <!-- Right: Cross-System Risk Radar Sidebar -->
-            <div class="glass-panel p-4 h-100 border border-secondary shadow-sm text-light d-flex flex-column justify-content-between" style="background: rgba(245, 158, 11, 0.03) !important; border-color: rgba(245, 158, 11, 0.15) !important; border-radius: 12px;">
-                <div>
-                    <h5 class="fw-bold mb-3" style="color: rgba(251, 191, 36, 0.85); font-size: 1.05rem;">⚠️ CROSS-SYSTEM RISK RADAR</h5>
-                    <div class="p-3 rounded bg-dark border border-warning border-opacity-10 mb-3">
-                        <strong style="color: rgba(251, 191, 36, 0.8); font-size: 0.85rem;">AI Interaction Alert:</strong>
-                        <p class="small text-muted mt-1 mb-0" style="line-height: 1.4; opacity: 0.85;">${riskAlert}</p>
-                    </div>
-                </div>
-                <button class="btn btn-sm w-100 fw-bold py-2 mt-auto" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); color: rgba(251, 191, 36, 0.85); border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'" onclick="showToast('Warning acknowledged & logged to ABDM audit trail.', 'success')">
-                    ✅ Acknowledge Warning
-                </button>
-            </div>
-            
-        </div>
-    `;
-};
 
 window.showAIExplanation = function() {
     alert("Explainable AI (XAI): Match generated using scikit-learn TF-IDF cosine similarity (96% weight) combined with WHO ICD-11 TM2 ontology cross-walk mapping.");
@@ -453,7 +370,7 @@ window.handleSignOut = async function(event) {
     }
 
     // Force redirect to login page in the current directory
-    window.location.replace('login.html'); // ✅ No slash!
+    window.location.replace('src/login.html'); // ✅ No slash!
 };
 
 // Switch between Top 3 candidates when pills are clicked
@@ -541,12 +458,110 @@ window.renderCandidateCard = function(entry, index) {
 };
 
 window.showAIExplanation = function() {
-    alert("Explainable AI (XAI): Match generated using scikit-learn TF-IDF cosine similarity (96% weight) combined with WHO ICD-11 TM2 ontology cross-walk mapping.");
+    if (window.currentEntries && window.currentEntries.length > 0) {
+        const entry = window.currentEntries[0].resource;
+        const scoreStr = entry.confidenceScore || "0%";
+        const scoreNum = parseFloat(scoreStr);
+        const term = entry.code.text;
+        
+        let matchReason = "Semantic NLP match using TF-IDF cosine similarity.";
+        if (scoreNum >= 98.0) {
+            matchReason = "Exact term match in the standardized terminology registry.";
+        } else if (scoreNum >= 95.0) {
+            matchReason = "Matched via known regional aliases or synonyms.";
+        }
+        
+        showGlassModal("Explainable AI (XAI) Engine", `
+            <div style="margin-bottom: 12px;"><strong>Term Mapped:</strong> ${term}</div>
+            <div style="margin-bottom: 12px;"><strong>Confidence Score:</strong> ${scoreStr}</div>
+            <div style="margin-bottom: 12px;"><strong>Match Reason:</strong> ${matchReason}</div>
+            <div><strong>Methodology:</strong> Standardized to NAMASTE and WHO ICD-11 TM2 ontologies.</div>
+        `);
+    } else {
+        showGlassModal("Explainable AI (XAI) Engine", "No AI mapping data available to explain.");
+    }
 };
 
 window.togglePatientView = function() {
-    alert("Layman Summary:\n• Condition: Fever / Body Heat\n• Purpose: Reduces temperature & clears inflammation\n• Caution: Avoid combining with strong blood thinners without consulting your physician.");
+    if (window.currentEntries && window.currentEntries.length > 0) {
+        const entry = window.currentEntries[0].resource;
+        const condition = entry.modernEquivalent || entry.code.text;
+        
+        const medTwin = entry.medicineTwin || {};
+        const rawUses = medTwin.traditionalUses || medTwin.traditional_uses || ["Symptom relief"];
+        const uses = Array.isArray(rawUses) ? rawUses.join(", ") : rawUses;
+        
+        const rawRisk = medTwin.riskRadar || medTwin.risk_warnings || ["Consult your physician before combining medications."];
+        const risk = Array.isArray(rawRisk) ? rawRisk[0] : rawRisk;
+
+        showGlassModal("Patient Friendly View", `
+            <div style="margin-bottom: 12px;"><strong>Condition:</strong> ${condition}</div>
+            <div style="margin-bottom: 12px;"><strong>Purpose:</strong> ${uses}</div>
+            <div><strong>Caution:</strong> ${risk}</div>
+        `);
+    } else {
+        showGlassModal("Patient Friendly View", "No active patient data available.");
+    }
 };
+
+// Helper function to render a gorgeous centered glassmorphism modal popup
+function showGlassModal(title, contentHtml) {
+    const existingModal = document.getElementById('customGlassModal');
+    if (existingModal) existingModal.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'customGlassModal';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(5, 8, 15, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeInGlass 0.2s ease-out;
+    `;
+
+    const card = document.createElement('div');
+    card.style.cssText = `
+        background: rgba(18, 24, 38, 0.85);
+        border: 1px solid rgba(0, 242, 254, 0.3);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 254, 0.15);
+        border-radius: 16px;
+        padding: 28px;
+        width: 90%;
+        max-width: 440px;
+        color: #f8fafc;
+        font-family: inherit;
+        position: relative;
+    `;
+
+    card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+            <h3 style="margin: 0; font-size: 1.15rem; color: #38bdf8; font-weight: 600;">${title}</h3>
+            <button id="closeGlassBtn" style="background: transparent; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+        </div>
+        <div style="font-size: 0.95rem; line-height: 1.5; color: #cbd5e1; margin-bottom: 24px;">
+            ${contentHtml}
+        </div>
+        <div style="text-align: right;">
+            <button id="glassOkBtn" style="background: linear-gradient(135deg, #0ea5e9, #2563eb); border: none; color: white; padding: 8px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);">Close</button>
+        </div>
+    `;
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    const closeAction = () => overlay.remove();
+    document.getElementById('closeGlassBtn').onclick = closeAction;
+    document.getElementById('glassOkBtn').onclick = closeAction;
+    overlay.onclick = (e) => { if (e.target === overlay) closeAction(); };
+}
 
 // --- IOT LOCATION-BASED ROUTING ---
 window.findNearbyClinics = function(systemName) {

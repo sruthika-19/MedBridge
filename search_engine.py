@@ -7,6 +7,82 @@ from medicine_twin import get_medicine_twin_data
 
 DB_FILE = "mappings.db"
 
+modern_mapping = {
+        # 1-10
+        "jvara": "Pyrexia / Fever",
+        "suram": "Pyrexia / Fever",
+        "humma": "Pyrexia / Fever",
+        "kasa": "Cough / Bronchitis",
+        "shwasa": "Bronchial Asthma / Dyspnea",
+        "irumal": "Cough",
+        "su-al": "Cough",
+        "hikka": "Hiccups",
+        "pandu": "Anemia / Iron Deficiency Anemia",
+        "manjal noi": "Jaundice / Viral Hepatitis",
+        
+        # 11-20
+        "yarqan": "Jaundice / Viral Hepatitis",
+        "aruchi": "Anorexia / Loss of Appetite",
+        "ajirana": "Indigestion",
+        "mandham": "Indigestion",
+        "su-e-hazm": "Indigestion",
+        "atisara": "Acute Diarrhea / Gastroenteritis",
+        "kazhichal": "Diarrhea",
+        "ishal": "Diarrhea",
+        "grahani": "Malabsorption Syndrome / IBS",
+        "chardi": "Emesis / Nausea and Vomiting",
+        
+        # 21-30
+        "vanti": "Vomiting",
+        "qai": "Vomiting",
+        "mutraghata": "Urinary Retention",
+        "neerizhivu": "Diabetes Mellitus",
+        "zayabetus": "Diabetes Mellitus",
+        "prameha": "Diabetes Mellitus / Metabolic Disorder",
+        "sandhigata vata": "Osteoarthritis",
+        "azhal keel vayu": "Osteoarthritis",
+        "waja-ul-mafasil": "Arthritis / Joint Pain",
+        "gridhrasi": "Sciatica / Lumbar Radiculopathy",
+        
+        # 31-40
+        "ardita": "Facial Paralysis",
+        "ajal kirkrippu": "Dermatitis",
+        "sadra-o-dwar": "Skin Disorder",
+        "kandu": "Itching / Pruritus",
+        "kampavata": "Parkinsonism / Tremors",
+        "sori": "Scabies / Itching",
+        "hikka-e-jild": "Skin Inflammation",
+        "dadru": "Ringworm / Tinea",
+        "vellai noi": "Leucorrhea",
+        "bars": "Vitiligo",
+        
+        # 41-50
+        "shotha": "Edema / Inflammatory Swelling",
+        "neeradai": "Cold / Rhinitis / Nasal Congestion",
+        "raktapitta": "Bleeding Disorder / Thrombocytopenia",
+        "gunmam": "Gastritis / Acidity",
+        "nazla": "Common Cold / Catarrh",
+        "vatarakta": "Gouty Arthritis",
+        "karappan": "Eczema / Dermatitis",
+        "warm": "Inflammation / Swelling",
+        "pakshaghata": "Stroke / Paralysis",
+        "soolai": "Colic / Abdominal Pain",
+        
+        # 51-62
+        "uqr": "Infertility",
+        "unmada": "Psychosis / Mental Disorder",
+        "vali noi": "Neurological Disorder",
+        "khafaqan": "Palpitation",
+        "shirashoola": "Headache / Migraine",
+        "siraneer": "Urinary Dysfunction",
+        "suda": "Headache",
+        "bhagna": "Bone Fracture",
+        "ootha noi": "Dropsy / Edema",
+        "amraz-e-jild": "Skin Disease",
+        "ashmari": "Kidney Stones / Renal Calculi",
+        "kayam": "Fatigue / Body Weakness"
+    }
+
 def search_disease(term_query, system_filter=None):
     if not term_query or not term_query.strip():
         return {
@@ -113,81 +189,7 @@ def build_fhir_payload(row, confidence):
     namaste = row[2]
     tm2 = row[3]
 
-    modern_mapping = {
-        # 1-10
-        "jvara": "Pyrexia / Fever",
-        "suram": "Pyrexia / Fever",
-        "humma": "Pyrexia / Fever",
-        "kasa": "Cough / Bronchitis",
-        "shwasa": "Bronchial Asthma / Dyspnea",
-        "irumal": "Cough",
-        "su-al": "Cough",
-        "hikka": "Hiccups",
-        "pandu": "Anemia / Iron Deficiency Anemia",
-        "manjal noi": "Jaundice / Viral Hepatitis",
-        
-        # 11-20
-        "yarqan": "Jaundice / Viral Hepatitis",
-        "aruchi": "Anorexia / Loss of Appetite",
-        "ajirana": "Indigestion",
-        "mandham": "Indigestion",
-        "su-e-hazm": "Indigestion",
-        "atisara": "Acute Diarrhea / Gastroenteritis",
-        "kazhichal": "Diarrhea",
-        "ishal": "Diarrhea",
-        "grahani": "Malabsorption Syndrome / IBS",
-        "chardi": "Emesis / Nausea and Vomiting",
-        
-        # 21-30
-        "vanti": "Vomiting",
-        "qai": "Vomiting",
-        "mutraghata": "Urinary Retention",
-        "neerizhivu": "Diabetes Mellitus",
-        "zayabetus": "Diabetes Mellitus",
-        "prameha": "Diabetes Mellitus / Metabolic Disorder",
-        "sandhigata vata": "Osteoarthritis",
-        "azhal keel vayu": "Osteoarthritis",
-        "waja-ul-mafasil": "Arthritis / Joint Pain",
-        "gridhrasi": "Sciatica / Lumbar Radiculopathy",
-        
-        # 31-40
-        "ardita": "Facial Paralysis",
-        "ajal kirkrippu": "Dermatitis",
-        "sadra-o-dwar": "Skin Disorder",
-        "kandu": "Itching / Pruritus",
-        "kampavata": "Parkinsonism / Tremors",
-        "sori": "Scabies / Itching",
-        "hikka-e-jild": "Skin Inflammation",
-        "dadru": "Ringworm / Tinea",
-        "vellai noi": "Leucorrhea",
-        "bars": "Vitiligo",
-        
-        # 41-50
-        "shotha": "Edema / Inflammatory Swelling",
-        "neeradai": "Cold / Rhinitis / Nasal Congestion",
-        "raktapitta": "Bleeding Disorder / Thrombocytopenia",
-        "gunmam": "Gastritis / Acidity",
-        "nazla": "Common Cold / Catarrh",
-        "vatarakta": "Gouty Arthritis",
-        "karappan": "Eczema / Dermatitis",
-        "warm": "Inflammation / Swelling",
-        "pakshaghata": "Stroke / Paralysis",
-        "soolai": "Colic / Abdominal Pain",
-        
-        # 51-62
-        "uqr": "Infertility",
-        "unmada": "Psychosis / Mental Disorder",
-        "vali noi": "Neurological Disorder",
-        "khafaqan": "Palpitation",
-        "shirashoola": "Headache / Migraine",
-        "siraneer": "Urinary Dysfunction",
-        "suda": "Headache",
-        "bhagna": "Bone Fracture",
-        "ootha noi": "Dropsy / Edema",
-        "amraz-e-jild": "Skin Disease",
-        "ashmari": "Kidney Stones / Renal Calculi",
-        "kayam": "Fatigue / Body Weakness"
-    }
+    
 
     modern_term = modern_mapping.get(trad_term.lower(), "Standardized Clinical Presentation")
 
@@ -200,9 +202,9 @@ def build_fhir_payload(row, confidence):
         
         # 🚀 INJECTED: The Medicine Twin & Risk Radar Payload
         "medicineTwin": {
-            "activeIngredients": twin_data.get("ingredients", []),
-            "traditionalUses": twin_data.get("traditional_uses", []),
-            "riskRadar": twin_data.get("risk_warnings", [])
+            "activeIngredients": twin_data.get("activeIngredients", []),
+            "traditionalUses": twin_data.get("traditionalUses", []),
+            "riskRadar": twin_data.get("riskRadar", [])
         },
         
         "clinicalStatus": {

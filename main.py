@@ -58,12 +58,8 @@ app.add_middleware(
 )
 
 def log_audit(term: str):
-    with open("audit_log.txt", "a") as f:
+    with open("audit_log.txt", "a", encoding="utf-8") as f:
         f.write(f"[{datetime.datetime.now()}] SEARCH QUERY: '{term}' | STATUS: Logged\n")
-
-#@app.get("/", tags=["Health Check"])
-#def home():
-#    return {"message": "Welcome to the MedBridge API. Systems operational."}
 
 @app.get("/sync/{disease_name}", summary="Search Traditional Term",tags=["EMR Integration"])
 def get_icd_code(disease_name: str, system: Optional[str] = None, background_tasks: BackgroundTasks = None):

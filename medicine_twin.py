@@ -13,56 +13,56 @@ client = Groq(api_key=groq_api_key)
 # The Dedicated Cache
 ai_risk_cache = {
     "jvara": {
-        "ingredients": ["Nilavembu", "Guduchi", "Parpata"],
-        "traditional_uses": ["Antipyretic", "Immunomodulator"],
-        "risk_warnings": ["None significant, monitor hydration"]
+        "activeIngredients": ["Nilavembu", "Guduchi", "Parpata"],
+        "traditionalUses": ["Antipyretic", "Immunomodulator"],
+        "riskRadar": ["None significant, monitor hydration"]
     },
     "suram": {
-        "ingredients": ["Nilavembu", "Parpata"],
-        "traditional_uses": ["Fever Reducer"],
-        "risk_warnings": ["None significant"]
+        "activeIngredients": ["Nilavembu", "Parpata"],
+        "traditionalUses": ["Fever Reducer"],
+        "riskRadar": ["None significant"]
     },
     "kasa": {
-        "ingredients": ["Tulsi", "Licorice (Mulethi)"],
-        "traditional_uses": ["Bronchodilator", "Expectorant"],
-        "risk_warnings": ["⚠️ AI Alert: Licorice can cause potassium depletion if taken with Diuretics"]
+        "activeIngredients": ["Tulsi", "Licorice (Mulethi)"],
+        "traditionalUses": ["Bronchodilator", "Expectorant"],
+        "riskRadar": ["⚠️ AI Alert: Licorice can cause potassium depletion if taken with Diuretics"]
     },
     "irumal": {
-        "ingredients": ["Adathoda", "Tulsi"],
-        "traditional_uses": ["Cough relief"],
-        "risk_warnings": ["None significant"]
+        "activeIngredients": ["Adathoda", "Tulsi"],
+        "traditionalUses": ["Cough relief"],
+        "riskRadar": ["None significant"]
     },
     "sandhigata vata": {
-        "ingredients": ["Ashwagandha", "Guggulu", "Shallaki"],
-        "traditional_uses": ["Anti-inflammatory", "Joint Lubrication"],
-        "risk_warnings": ["⚠️ AI Alert: Ashwagandha + Blood Thinners = Bleeding Risk"]
+        "activeIngredients": ["Ashwagandha", "Guggulu", "Shallaki"],
+        "traditionalUses": ["Anti-inflammatory", "Joint Lubrication"],
+        "riskRadar": ["⚠️ AI Alert: Ashwagandha + Blood Thinners = Bleeding Risk"]
     },
     "prameha": {
-        "ingredients": ["Gymnema sylvestre", "Curcuma longa", "Emblica officinalis"],
-        "traditional_uses": ["Management of diabetes mellitus", "Metabolic syndrome"],
-        "risk_warnings": ["⚠️ AI Alert: Combining with insulin/metformin may cause severe hypoglycemia."]
+        "activeIngredients": ["Gymnema sylvestre", "Curcuma longa", "Emblica officinalis"],
+        "traditionalUses": ["Management of diabetes mellitus", "Metabolic syndrome"],
+        "riskRadar": ["⚠️ AI Alert: Combining with insulin/metformin may cause severe hypoglycemia."]
     },
 
     "shoola": {
-        "ingredients": ["Zingiber officinale", "Ferula foetida", "Trachyspermum ammi"],
-        "traditional_uses": ["Relief of acute abdominal colic", "Management of indigestion"],
-        "risk_warnings": ["⚠️ AI Alert: Combining with synthetic NSAIDs increases gastrointestinal bleeding risks."]
+        "activeIngredients": ["Zingiber officinale", "Ferula foetida", "Trachyspermum ammi"],
+        "traditionalUses": ["Relief of acute abdominal colic", "Management of indigestion"],
+        "riskRadar": ["⚠️ AI Alert: Combining with synthetic NSAIDs increases gastrointestinal bleeding risks."]
     },
     "gunmam": {
-        "ingredients": ["Cuminum cyminum", "Zingiber officinale", "Rock Salt"],
-        "traditional_uses": ["Gastritis and acidity management"],
-        "risk_warnings": ["⚠️ AI Alert: May interact with proton pump inhibitors."]
+        "activeIngredients": ["Cuminum cyminum", "Zingiber officinale", "Rock Salt"],
+        "traditionalUses": ["Gastritis and acidity management"],
+        "riskRadar": ["⚠️ AI Alert: May interact with proton pump inhibitors."]
     },
     "pandu": {
-        "ingredients": ["Punarnava", "Amalaki", "Guduchi"],
-        "traditional_uses": ["Management of iron-deficiency anemia and chronic fatigue"],
-        "risk_warnings": ["⚠️ AI Alert: Combining traditional iron remedies with modern supplements can cause iron toxicity."]
+        "activeIngredients": ["Punarnava", "Amalaki", "Guduchi"],
+        "traditionalUses": ["Management of iron-deficiency anemia and chronic fatigue"],
+        "riskRadar": ["⚠️ AI Alert: Combining traditional iron remedies with modern supplements can cause iron toxicity."]
     }
 }
 
 def get_medicine_twin_data(trad_term):
     if not groq_api_key:
-        return {"ingredients": ["API Key Missing"], "traditional_uses": [""], "risk_warnings": [""]}
+        return {"activeIngredients": ["API Key Missing"], "traditionalUses": [""], "riskRadar": [""]}
         
     term_key = trad_term.lower()
 
@@ -100,7 +100,7 @@ def get_medicine_twin_data(trad_term):
         error_msg = str(e)
         print(f"Risk Radar Groq Error: {error_msg}")
         return {
-            "ingredients": ["Data unavailable"],
-            "traditional_uses": ["Data unavailable"],
-            "risk_warnings": ["⚠️ System could not fetch interaction risks."]
+            "activeIngredients": ["Data unavailable"],
+            "traditionalUses": ["Data unavailable"],
+            "riskRadar": ["⚠️ System could not fetch interaction risks."]
         }
