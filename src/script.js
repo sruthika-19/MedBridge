@@ -32,7 +32,7 @@ if (diseaseInput && searchButton) {
         `;
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/v1/ai-scribe", {
+            const response = await fetch(`/api/v1/ai-scribe`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ notes: notesText })
@@ -254,7 +254,7 @@ if (bulkUploadBtn && csvFileInput) {
         formData.append("file", file);
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/v1/bulk-map", {
+            const response = await fetch("/api/v1/bulk-map", {
                 method: "POST",
                 body: formData
             });
@@ -310,7 +310,7 @@ const auditLogDisplay = document.getElementById("auditLogDisplay");
 if (auditLogDisplay) {
     async function fetchAuditLogs() {
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/v1/audit-logs");
+            const response = await fetch("/api/v1/audit-logs");
             if (response.ok) {
                 const logText = await response.text();
                 auditLogDisplay.textContent = logText || "No logs recorded yet.";
@@ -563,7 +563,7 @@ window.findNearbyClinics = function(systemName) {
         showToast("📡 Coordinates acquired! Searching network...", "success");
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/nearby-clinics', {
+            const response = await fetch('/api/v1/nearby-clinics', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -628,7 +628,7 @@ window.sendReferralEmail = async function(clinicName, doctorName, distance, syst
     showToast("📧 Encrypting and sending secure referral...", "success");
     
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/v1/send-referral', {
+        const response = await fetch('/api/v1/send-referral', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
