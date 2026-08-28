@@ -359,6 +359,8 @@ window.handleSignOut = async function(event) {
     if(event) 
         event.preventDefault();
     localStorage.removeItem('userRole');
+    localStorage.clear();
+    sessionStorage.clear();
 
     try {
         const sb = window.supabaseClient || window.supabase || supabase; 
@@ -369,8 +371,12 @@ window.handleSignOut = async function(event) {
         console.log("Session notice:", err);
     }
 
-    // Force redirect to login page in the current directory
-    window.location.replace('src/login.html'); // ✅ No slash!
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('/src/')) {
+        window.location.replace('login.html');
+    } else {
+        window.location.replace('/src/login.html');
+    }
 };
 
 // Switch between Top 3 candidates when pills are clicked
@@ -672,3 +678,26 @@ window.sendReferralEmail = async function(clinicName, doctorName, distance, syst
         console.error(error);
     }
 };
+
+const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+if (diseaseInput && clearSearchBtn) {
+    // Show/hide close button based on whether text exists
+    diseaseInput.addEventListener("input", function() {
+        if (this.value.trim().length > 0) {
+            clearSearchBtn.classList.remove("d-none");
+        } else {
+            clearSearchBtn.classList.add("d-none");
+        }
+    });
+
+    // Clear input and results when close button is clicked
+    clearSearchBtn.addEventListener("click", function() {
+        diseaseInput.value = "";
+        clearSearchBtn.classList.add("d-none");
+        if (result) result.innerHTML = "";
+        if (emrIntegration) emrIntegration.innerHTML = "";
+        diseaseInput.focus();
+        showToast("Search cleared.", "info");
+    });
+}

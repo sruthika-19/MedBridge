@@ -19,7 +19,7 @@
                 <div class="navbar-nav ms-auto gap-3 align-items-center">
                     <a class="nav-link text-info fw-semibold" href="index.html">🩺 Clinician Portal</a>
                     <a class="nav-link text-light fw-semibold" href="admin.html">🛡️ Hospital Admin</a>
-                    <button id="signOutBtn" class="btn btn-sm btn-outline-danger px-3 py-1 fw-bold" onclick="handleSignOut(event)">Sign Out</button>
+                    <button id="signOutBtn" class="btn btn-sm btn-outline-danger px-3 py-1 fw-bold" onclick="localStorage.clear(); sessionStorage.clear(); window.location.href='login.html';">Sign Out</button>
                 </div>
             </div>
         </nav>
