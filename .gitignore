@@ -3,6 +3,6 @@ __pycache__/
 .DS_Store
 
 # Add these lines to ignore local databases and logs
-mappings.db
+.env
 audit_log.txt
 *.loggit commit --amend -m "feat: complete robust backend with Groq integration, FHIR bundling, and
