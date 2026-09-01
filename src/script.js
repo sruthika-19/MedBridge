@@ -53,7 +53,7 @@ if (diseaseInput && searchButton) {
                 entries.forEach((entry, index) => {
                     const res = entry.resource;
                    const score = res.confidenceScore || "Not available";
-                    const validationStatus = res.validationStatus || "Not available";
+                    
                     const mappingStatus = res.mappingStatus || "Not available";
                     const badgeColor = index === 0 ? "bg-success text-white" : index === 1 ? "bg-warning text-dark" : "bg-secondary text-white";
                     cardsHtml += `
@@ -429,6 +429,7 @@ const confScore = res.confidenceScore || "Not available";
                 </div>
                 
                 <div class="mb-2"><strong style="opacity: 0.7;">Traditional:</strong> <span class="text-light">${tradTerm}</span> <span class="text-muted" style="font-size: 0.8rem;">(${systemName})</span></div>
+                <div class="mb-2"><strong style="opacity: 0.7;">Mapping Status:</strong> <span class="text-light">${mappingStatus}</span></div>
                 <div class="mb-2" style="color: rgba(56, 189, 248, 0.9);"><strong>↳ NAMASTE Code:</strong> ${tradCode}</div>
                 <div class="mb-2"><strong style="opacity: 0.7;">Modern Equivalent:</strong> <span class="text-light">${modernEq}</span></div>
                 <div class="mb-3" style="color: rgba(52, 211, 153, 0.9);"><strong>↳ WHO ICD-11 (TM2):</strong> ${icdCode}</div>
