@@ -433,6 +433,7 @@ const confScore = res.confidenceScore || "Not available";
                 <div class="mb-2"><strong style="opacity: 0.7;">Traditional:</strong> <span class="text-light">${tradTerm}</span> <span class="text-muted" style="font-size: 0.8rem;">(${systemName})</span></div>
                 <div class="mb-2"><strong style="opacity: 0.7;">Mapping Status:</strong> <span class="text-light">${mappingStatus}</span></div>
                 <div class="mb-2"><strong style="opacity: 0.7;">Match Status:</strong> <span class="text-light">${matchStatus}</span></div>
+                <div class="mb-2"><strong style="opacity: 0.7;">Source:</strong> <span class="text-light">${source.name || "Not available"}</span></div>
                 <div class="mb-2" style="color: rgba(56, 189, 248, 0.9);"><strong>↳ NAMASTE Code:</strong> ${tradCode}</div>
                 <div class="mb-2"><strong style="opacity: 0.7;">Modern Equivalent:</strong> <span class="text-light">${modernEq}</span></div>
                 <div class="mb-3" style="color: rgba(52, 211, 153, 0.9);"><strong>↳ WHO ICD-11 (TM2):</strong> ${icdCode}</div>
