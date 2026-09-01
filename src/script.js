@@ -54,6 +54,7 @@ if (diseaseInput && searchButton) {
                     const res = entry.resource;
                    const score = res.confidenceScore || "Not available";
                     
+                    
                     const mappingStatus = res.mappingStatus || "Not available";
                     const matchStatus = res.matchStatus || "Not available";
                     const source = res.source || {};
@@ -406,7 +407,7 @@ window.renderCandidateCard = function(entry, index) {
     const rawUses = medTwin.traditionalUses || medTwin.traditional_uses || medTwin.uses;
     const traditionalUses = rawUses ? 
         (Array.isArray(rawUses) ? rawUses.join(", ") : rawUses) 
-       "Not available"
+       :"Not available";
     const rawRisk = medTwin.riskRadar || medTwin.risk_warnings || medTwin.risk_alerts || medTwin.alerts;
     const riskAlert = rawRisk ? 
         (Array.isArray(rawRisk) ? rawRisk[0] : rawRisk) 
