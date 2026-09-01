@@ -419,6 +419,10 @@ const systemName = res.system || "Not available";
 const modernEq = res.modernEquivalent || "Not available";
 const tradTerm = res.code && res.code.text ? res.code.text : "Not available";
 const confScore = res.confidenceScore || "Not available";
+    const mappingStatus = res.mappingStatus || "Not available";
+const matchStatus = res.matchStatus || "Not available";
+const validationStatus = res.validationStatus || "Not available";
+const source = res.source || {};
 
     return `
         <!-- Flexbox wrapper to guarantee side-by-side layout on desktop -->
