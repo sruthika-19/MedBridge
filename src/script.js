@@ -499,7 +499,7 @@ window.togglePatientView = function() {
         const condition = entry.modernEquivalent || entry.code.text;
         
         const medTwin = entry.medicineTwin || {};
-        const rawUses = medTwin.traditionalUses || medTwin.traditional_uses || ["Symptom relief"];
+       const rawUses = medTwin.traditionalUses || medTwin.traditional_uses || medTwin.uses;
         const uses = Array.isArray(rawUses) ? rawUses.join(", ") : rawUses;
         
         const rawRisk = medTwin.riskRadar || medTwin.risk_warnings || ["Consult your physician before combining medications."];
