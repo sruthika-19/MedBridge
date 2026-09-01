@@ -57,6 +57,9 @@ if (diseaseInput && searchButton) {
                     
                     const mappingStatus = res.mappingStatus || "Not available";
                     const matchStatus = res.matchStatus || "Not available";
+                    
+                    const validationStatus = res.validationStatus || "Not available";
+                    
                     const source = res.source || {};
                     const badgeColor = index === 0 ? "bg-success text-white" : index === 1 ? "bg-warning text-dark" : "bg-secondary text-white";
                     cardsHtml += `
