@@ -402,8 +402,7 @@ window.renderCandidateCard = function(entry, index) {
     const rawUses = medTwin.traditionalUses || medTwin.traditional_uses || medTwin.uses;
     const traditionalUses = rawUses ? 
         (Array.isArray(rawUses) ? rawUses.join(", ") : rawUses) 
-        : "Antipyretic, Anti-inflammatory, Immune Support";
-
+       "Not available"
     const rawRisk = medTwin.riskRadar || medTwin.risk_warnings || medTwin.risk_alerts || medTwin.alerts;
     const riskAlert = rawRisk ? 
         (Array.isArray(rawRisk) ? rawRisk[0] : rawRisk) 
