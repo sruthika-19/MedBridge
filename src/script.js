@@ -55,6 +55,7 @@ if (diseaseInput && searchButton) {
                    const score = res.confidenceScore || "Not available";
                     
                     const mappingStatus = res.mappingStatus || "Not available";
+                    const matchStatus = res.matchStatus || "Not available";
                     const badgeColor = index === 0 ? "bg-success text-white" : index === 1 ? "bg-warning text-dark" : "bg-secondary text-white";
                     cardsHtml += `
                         <button type="button" class="btn btn-sm ${badgeColor} fw-semibold px-3 py-1 rounded-pill" onclick="selectCandidate(${index})">
