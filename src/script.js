@@ -447,7 +447,7 @@ const confScore = res.confidenceScore || "Not available";
                 <div>
                     <h5 class="fw-bold mb-3" style="color: rgba(251, 191, 36, 0.85); font-size: 1.05rem;">⚠️ CROSS-SYSTEM RISK RADAR</h5>
                     <div class="p-3 rounded bg-dark border border-warning border-opacity-10 mb-3">
-                        <strong style="color: rgba(251, 191, 36, 0.8); font-size: 0.85rem;">Mild Contraindication:</strong>
+                       <strong style="color: rgba(251, 191, 36, 0.8); font-size: 0.85rem;">Risk Radar:</strong>
                         <p class="small text-muted mt-1 mb-0" style="line-height: 1.4; opacity: 0.85;">${riskAlert}</p>
                     </div>
                 </div>
