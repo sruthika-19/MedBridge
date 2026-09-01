@@ -20,7 +20,32 @@ if (diseaseInput && searchButton) {
         emrIntegration.innerHTML = "";
 
         if (!notesText) {
-            result.innerHTML = `<div class="alert-danger text-center mt-4">Error: Please enter clinical notes or a diagnosis.</div>`;
+            result.innerHTML = `
+                <div class="alert-danger text-center mt-4">
+                    Please enter a diagnosis or clinical term.
+                </div>
+            `;
+            showToast("Please enter a diagnosis or clinical term.", "error");
+            return;
+        }
+
+        if (notesText.length < 2) {
+            result.innerHTML = `
+                <div class="alert-danger text-center mt-4">
+                    Invalid clinical search term. Please enter at least 2 characters.
+                </div>
+            `;
+            showToast("Please enter at least 2 characters.", "error");
+            return;
+        }
+
+        if (/^\d+$/.test(notesText)) {
+            result.innerHTML = `
+                <div class="alert-danger text-center mt-4">
+                    Invalid clinical search term. Please enter a valid diagnosis name.
+                </div>
+            `;
+            showToast("Numbers alone are not valid clinical terms.", "error");
             return;
         }
 
@@ -39,7 +64,12 @@ if (diseaseInput && searchButton) {
             });
             const data = await response.json();
 
-            if (data.status === "success" && data.bundle && data.bundle.entry) {
+            if (
+                data.status === "success" &&
+                data.bundle &&
+                Array.isArray(data.bundle.entry) &&
+                data.bundle.entry.length > 0
+            ) {
                 window.lastRawJSON = JSON.stringify(data.bundle, null, 2); 
                 const entries = data.bundle.entry;
 
@@ -97,13 +127,26 @@ if (diseaseInput && searchButton) {
                 showToast("Successfully extracted conditions and generated Medicine Twins!", 'success');
 
             } else {
-                result.innerHTML = `<div class="alert-danger text-center mt-4">${data.message || "No conditions extracted."}</div>`;
-                showToast(data.message || "Extraction failed.", 'error');
+                const errorMessage = data.message || "No reliable clinical mapping was found.";
+
+                result.innerHTML = `
+                    <div class="alert-danger text-center mt-4 p-3 rounded">
+                        ${errorMessage}
+                    </div>
+                `;
+
+                showToast(errorMessage, "error");
             }
             } catch (error) {
-                result.innerHTML = `<div class="alert-danger text-center mt-4">Unable to connect to the MedBridge API.</div>`;
-                console.error(error);
-                showToast("Connection failed.", 'error');
+                console.error("MedBridge API error:", error);
+
+                result.innerHTML = `
+                    <div class="alert-danger text-center mt-4">
+                        Unable to process the request. Please try again.
+                    </div>
+                `;
+
+                showToast("Unable to process the request.", "error");
             }
         });
 }
@@ -118,33 +161,97 @@ window.togglePatientView = function() {
 };
 
 // Voice Recognition setup
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
 if (SpeechRecognition && micButton && diseaseInput) {
     const recognition = new SpeechRecognition();
+
     recognition.continuous = false;
-    recognition.lang = 'en-IN'; 
+    recognition.interimResults = false;
+    recognition.lang = "en-IN";
+
+    let isListening = false;
+
+    function resetMic() {
+        isListening = false;
+        micButton.style.background = "";
+        micButton.innerHTML = "🎙️";
+        micButton.title = "Voice Search";
+        diseaseInput.placeholder = "Enter diagnosis";
+    }
 
     micButton.addEventListener("click", () => {
-        diseaseInput.placeholder = "Listening...";
-        micButton.style.background = "#ff4444"; 
-        recognition.start();
+        if (isListening) {
+            // Turn microphone OFF
+            recognition.stop();
+            resetMic();
+            return;
+        }
+
+        try {
+            // Turn microphone ON
+            isListening = true;
+            diseaseInput.placeholder = "Listening...";
+            micButton.style.background = "#ff4444";
+            micButton.innerHTML = "⏹️";
+            micButton.title = "Stop voice input";
+
+            recognition.start();
+        } catch (error) {
+            console.error("Speech recognition start error:", error);
+            resetMic();
+        }
     });
 
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        diseaseInput.value = transcript;
-        micButton.style.background = "#e0e0e0";
-        diseaseInput.placeholder = "Enter diagnosis";
-        searchButton.click(); 
+    recognition.onstart = () => {
+        isListening = true;
+        diseaseInput.placeholder = "Listening...";
+        micButton.style.background = "#ff4444";
+        micButton.innerHTML = "⏹️";
+        micButton.title = "Stop voice input";
     };
 
-    recognition.onerror = () => {
-        micButton.style.background = "#e0e0e0";
-        diseaseInput.placeholder = "Enter diagnosis";
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.trim();
+
+        if (transcript) {
+            diseaseInput.value = transcript;
+            diseaseInput.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+
+        resetMic();
+
+        // Automatically search after successful voice input
+        if (transcript) {
+            searchButton.click();
+        }
     };
-} 
-else if (micButton){
-    micButton.style.display = "none"; 
+
+    recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+
+        if (event.error === "not-allowed") {
+            alert("Microphone permission was denied. Please allow microphone access in your browser.");
+        } else if (event.error === "no-speech") {
+            showToast("No speech detected. Please try again.", "error");
+        } else if (event.error === "audio-capture") {
+            showToast("Microphone could not be accessed.", "error");
+        } else {
+            showToast("Voice recognition failed. Please try again.", "error");
+        }
+
+        resetMic();
+    };
+
+    recognition.onend = () => {
+        // Browser may stop recognition automatically.
+        resetMic();
+    };
+
+} else if (micButton) {
+    // Browser does not support Speech Recognition
+    micButton.style.display = "none";
 }
 
 //admin.html

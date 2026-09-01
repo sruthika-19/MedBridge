@@ -83,17 +83,27 @@ modern_mapping = {
         "kayam": "Fatigue / Body Weakness"
     }
 
+def normalize_term(term):
+    if not term:
+        return None
+
+    return " ".join(term.lower().strip().split())
+
 def search_disease(term_query, system_filter=None):
     if not term_query or not term_query.strip():
         return {
             "status": "error",
+            "errorCode": "INVALID_INPUT",
             "message": "Search term cannot be empty.",
             "data": []
         }
 
-    if term_query.isdigit() or len(term_query.strip()) < 2:
+    normalized_term = normalize_term(term_query)
+
+    if normalized_term.isdigit() or len(normalized_term) < 2:
         return {
             "status": "error",
+            "errorCode": "INVALID_INPUT",
             "message": "Invalid clinical search term. Please enter a valid diagnosis name.",
             "data": []
         }
@@ -119,11 +129,12 @@ def search_disease(term_query, system_filter=None):
     if not rows:
         return {
             "status": "error",
+            "errorCode": "DATABASE_ERROR",
             "message": "Database is empty.",
             "data": []
         }
 
-    query = term_query.lower().strip()
+    query = normalized_term
 
     documents = []
     doc_row_mapping = []
@@ -173,13 +184,14 @@ def search_disease(term_query, system_filter=None):
         }
 
     # If it's a modern clinical term not in the local traditional dataset, instantly query WHO
-    who_res = search_who_api(term_query)
+    who_res = search_who_api(normalized_term)
     if who_res.get("status") == "success":
         return who_res
 
     return {
         "status": "error",
-        "message": f"No reliable clinical mapping found for '{term_query}' locally or via WHO API.",
+        "errorCode": "TERM_NOT_FOUND",
+        "message": f"No reliable clinical mapping found for '{normalized_term}' locally or via WHO API.",
         "data": []
     }
 
