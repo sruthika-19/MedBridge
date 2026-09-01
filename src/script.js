@@ -398,8 +398,7 @@ window.renderCandidateCard = function(entry, index) {
     const rawIngredients = medTwin.activeIngredients || medTwin.ingredients || medTwin.active_ingredients;
     const ingredients = rawIngredients ? 
         (Array.isArray(rawIngredients) ? rawIngredients.join(", ") : rawIngredients) 
-        : "Nilavembu, Papaya leaf extract, Nilavembu kudineer chooranam";
-
+        : "Not available";
     const rawUses = medTwin.traditionalUses || medTwin.traditional_uses || medTwin.uses;
     const traditionalUses = rawUses ? 
         (Array.isArray(rawUses) ? rawUses.join(", ") : rawUses) 
