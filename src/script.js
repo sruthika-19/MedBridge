@@ -406,8 +406,7 @@ window.renderCandidateCard = function(entry, index) {
     const rawRisk = medTwin.riskRadar || medTwin.risk_warnings || medTwin.risk_alerts || medTwin.alerts;
     const riskAlert = rawRisk ? 
         (Array.isArray(rawRisk) ? rawRisk[0] : rawRisk) 
-        : "Monitor patient if co-prescribing with modern NSAIDs (e.g., Ibuprofen) due to compound toxicity risks.";
-
+        : "Not available";
    const codingList = res.code && res.code.coding ? res.code.coding : [];
 const tradCode = codingList[0] ? codingList[0].code : "Not available";
 const icdCode = codingList[1] ? codingList[1].code : "Not available";
