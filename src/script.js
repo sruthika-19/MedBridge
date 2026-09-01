@@ -410,13 +410,13 @@ window.renderCandidateCard = function(entry, index) {
         (Array.isArray(rawRisk) ? rawRisk[0] : rawRisk) 
         : "Monitor patient if co-prescribing with modern NSAIDs (e.g., Ibuprofen) due to compound toxicity risks.";
 
-    const codingList = res.code && res.code.coding ? res.code.coding : [];
-    const tradCode = codingList[0] ? codingList[0].code : "SID-135";
-    const icdCode = codingList[1] ? codingList[1].code : "SP52";
-    const systemName = res.system || "Siddha";
-    const modernEq = res.modernEquivalent || "Standardized Clinical Presentation";
-    const tradTerm = res.code.text || "Traditional Presentation";
-    const confScore = res.confidenceScore || "94.0%";
+   const codingList = res.code && res.code.coding ? res.code.coding : [];
+const tradCode = codingList[0] ? codingList[0].code : "Not available";
+const icdCode = codingList[1] ? codingList[1].code : "Not available";
+const systemName = res.system || "Not available";
+const modernEq = res.modernEquivalent || "Not available";
+const tradTerm = res.code && res.code.text ? res.code.text : "Not available";
+const confScore = res.confidenceScore || "Not available";
 
     return `
         <!-- Flexbox wrapper to guarantee side-by-side layout on desktop -->
