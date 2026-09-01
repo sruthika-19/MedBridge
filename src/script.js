@@ -471,7 +471,7 @@ const confScore = res.confidenceScore || "Not available";
 window.showAIExplanation = function() {
     if (window.currentEntries && window.currentEntries.length > 0) {
         const entry = window.currentEntries[0].resource;
-        const scoreStr = entry.confidenceScore || "0%";
+       const scoreStr = entry.confidenceScore || "Not available";
         const scoreNum = parseFloat(scoreStr);
         const term = entry.code.text;
         
