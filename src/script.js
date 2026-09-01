@@ -502,7 +502,7 @@ window.togglePatientView = function() {
        const rawUses = medTwin.traditionalUses || medTwin.traditional_uses || medTwin.uses;
         const uses = Array.isArray(rawUses) ? rawUses.join(", ") : rawUses;
         
-        const rawRisk = medTwin.riskRadar || medTwin.risk_warnings || ["Consult your physician before combining medications."];
+       const rawRisk = medTwin.riskRadar || medTwin.risk_warnings || medTwin.risk_alerts || medTwin.alerts;
         const risk = Array.isArray(rawRisk) ? rawRisk[0] : rawRisk;
 
         showGlassModal("Patient Friendly View", `
