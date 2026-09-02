@@ -2,8 +2,11 @@ venv/
 __pycache__/
 .DS_Store
 
-# Add these lines to ignore local databases and logs
+# Local databases and logs
 mappings.db
 audit_log.txt
 *.db
-*.loggit commit --amend -m "feat: complete robust backend with Groq integration, FHIR bundling, and
+*.log
+
+# Environment variables
+.env
