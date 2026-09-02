@@ -446,7 +446,7 @@ const source = res.source || {};
                 <div class="mb-2" style="color: rgba(56, 189, 248, 0.9);"><strong>↳ NAMASTE Code:</strong> ${tradCode}</div>
                 <div class="mb-2"><strong style="opacity: 0.7;">Modern Equivalent:</strong> <span class="text-light">${modernEq}</span></div>
                 <div class="mb-3" style="color: rgba(52, 211, 153, 0.9);"><strong>↳ WHO ICD-11 (TM2):</strong> ${icdCode}</div>
-    <div class="mb-2"><strong style="opacity: 0.7;">Validation Status:</strong> <span class="text-light">${validationStatus}</span></div>
+                <div class="mb-2"><strong style="opacity: 0.7;">Validation Status:</strong> <span class="badge bg-secondary">${validationStatus}</span></div>
                 <hr class="border-secondary my-3" style="opacity: 0.3;">
                 
                 <p class="mb-1 fw-bold" style="color: rgba(56, 189, 248, 0.85); font-size: 0.9rem;">Active Botanical Ingredients:</p>
