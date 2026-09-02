@@ -69,14 +69,14 @@ if (diseaseInput && searchButton) {
                 return;
             }
 
-            const response = await fetch(`/api/v1/ai-scribe`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({ notes: notesText })
-            });
+            const response = await fetch("/api/v1/ai-scribe", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`
+    },
+    body: JSON.stringify({ notes: notesText })
+});
             const data = await response.json();
 
             if (
@@ -329,17 +329,32 @@ if (bulkUploadBtn && csvFileInput) {
         formData.append("file", file);
 
         try {
-            const response = await fetch("/api/v1/bulk-map", {
-                method: "POST",
-                body: formData
-            });
+                const { data: { session }, error: sessionError } =
+                    await supabaseClient.auth.getSession();
 
+                if (sessionError || !session) {
+                    bulkResult.innerHTML = `
+                        <span class="text-danger">
+                            Please log in as an administrator.
+                        </span>
+                    `;
+                    showToast("Admin authentication required.", "error");
+                    return;
+                }
+
+                const response = await fetch("/api/v1/bulk-map", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${session.access_token}`
+                    },
+                    body: formData
+                });
             if (response.ok) {
                 const blob = await response.blob();
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = downloadUrl;
-                a.download = `MedBridge_Standardized_${file.name.replace('.csv', '.xlsx')}`;                document.body.appendChild(a);
+                a.download = `MedBridge_Standardized_${file.name.replace('.csv', '.xlsx')}`;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
@@ -349,8 +364,7 @@ if (bulkUploadBtn && csvFileInput) {
             } else {
                 bulkResult.innerHTML = "<span class='text-danger'>Server error processing file.</span>";
                 showToast("Failed to standardize records.", "error");
-            }
-        } catch (error) {
+            }} catch (error) {
             console.error(error);
             bulkResult.innerHTML = "<span class='text-danger'>Failed to connect to MedBridge API.</span>";
         }
@@ -384,18 +398,40 @@ const auditLogDisplay = document.getElementById("auditLogDisplay");
 
 if (auditLogDisplay) {
     async function fetchAuditLogs() {
-        try {
-            const response = await fetch("/api/v1/audit-logs");
-            if (response.ok) {
-                const logText = await response.text();
-                auditLogDisplay.textContent = logText || "No logs recorded yet.";
-                // Auto-scroll to the bottom of the log window
-                auditLogDisplay.scrollTop = auditLogDisplay.scrollHeight;
-            }
-        } catch (error) {
-            console.error("Failed to fetch audit logs:", error);
+    try {
+        const { data: { session }, error: sessionError } =
+            await supabaseClient.auth.getSession();;
+
+        if (sessionError || !session) {
+            auditLogDisplay.textContent =
+                "Admin authentication required.";
+            return;
         }
+
+        const response = await fetch("/api/v1/audit-logs", {
+            headers: {
+                "Authorization": `Bearer ${session.access_token}`
+            }
+        });
+
+        if (response.ok) {
+            const logText = await response.text();
+            auditLogDisplay.textContent =
+                logText || "No logs recorded yet.";
+
+            auditLogDisplay.scrollTop =
+                auditLogDisplay.scrollHeight;
+        } else if (response.status === 401 || response.status === 403) {
+            auditLogDisplay.textContent =
+                "Admin authentication required.";
+        }
+
+    } catch (error) {
+        console.error("Failed to fetch audit logs:", error);
+        auditLogDisplay.textContent =
+            "Unable to load audit logs.";
     }
+}
 
     // Fetch logs immediately and then every 3 seconds
     fetchAuditLogs();
@@ -994,9 +1030,20 @@ window.findNearbyClinics = function(systemName) {
         showToast("📡 Coordinates acquired! Searching network...", "success");
 
         try {
+            const { data: { session } } =
+                await supabaseClient.auth.getSession();
+
+            if (!session) {
+                showToast("Please log in again.", "error");
+                return;
+            }
+
             const response = await fetch('/api/v1/nearby-clinics', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
                 body: JSON.stringify({
                     latitude: lat,
                     longitude: lng,

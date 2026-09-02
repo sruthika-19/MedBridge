@@ -180,62 +180,118 @@ async def bulk_map_xlsx(
     _: dict = Depends(require_role("admin")),
 ):
     content = await file.read()
-    text = content.decode("utf-8")
-    
-    # Create a list to store rows instead of writing directly to CSV
+
+    try:
+        text = content.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return {
+            "status": "error",
+            "message": "Please upload a CSV file encoded as UTF-8."
+        }
+
     processed_data = []
-    
+
     reader = csv.reader(io.StringIO(text))
-    next(reader, None) # Skip header
-    
+    next(reader, None)  # Skip header
+
     for row in reader:
-        if not row: continue
+        if not row or not row[0].strip():
+            continue
+
         term = row[0].strip()
-        result = search_disease(term)
-        
-        if result["status"] == "success":
-            fhir = result["data"][0]
-            modern_name = fhir["modernEquivalent"]
+
+        try:
+            result = search_disease(term)
+
+            if result.get("status") == "success" and result.get("data"):
+                mapping = result["data"][0]
+
+                traditional = mapping.get("traditionalTerm") or {}
+                namaste = mapping.get("namaste") or {}
+                icd11 = mapping.get("icd11") or {}
+
+                processed_data.append([
+                    term,
+                    icd11.get("title") or "N/A",
+                    "Mapped",
+                    namaste.get("code") or "N/A",
+                    icd11.get("code") or "N/A",
+                    mapping.get("matchScore", "N/A"),
+                    traditional.get("system") or "N/A"
+                ])
+
+            else:
+                processed_data.append([
+                    term,
+                    "N/A",
+                    "Failed",
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A"
+                ])
+
+        except Exception as e:
             processed_data.append([
                 term,
-                modern_name, 
-                "Mapped", 
-                fhir["code"]["coding"][0]["code"], 
-                fhir["code"]["coding"][1]["code"], 
-                fhir["confidenceScore"], 
-                fhir["code"]["coding"][0]["system"].split(":")[-1].upper()
+                "N/A",
+                f"Failed: {str(e)}",
+                "N/A",
+                "N/A",
+                "N/A",
+                "N/A"
             ])
-        else:
-            processed_data.append([term, "N/A", "Failed", "N/A", "N/A", "N/A", "N/A"])
 
-    # Create a Professional DataFrame
-    df = pd.DataFrame(processed_data, columns=[
-        "Original_Diagnosis", "Modern_Clinical_Name", "Status", 
-        "NAMASTE_Code", "ICD_11_Code", "Confidence", "System"
-    ])
-    
-    # Save to Excel in memory with auto-fit columns
+    df = pd.DataFrame(
+        processed_data,
+        columns=[
+            "Original_Diagnosis",
+            "Modern_Clinical_Name",
+            "Status",
+            "NAMASTE_Code",
+            "ICD_11_Code",
+            "Confidence",
+            "System"
+        ]
+    )
+
     output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Mapped_Data')
-        
-        # Get the xlsxwriter or openpyxl worksheet object
-        worksheet = writer.sheets['Mapped_Data']
-        for idx, col in enumerate(df.columns):
-            # Calculate column width based on max string length
+
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(
+            writer,
+            index=False,
+            sheet_name="Mapped_Data"
+        )
+
+        worksheet = writer.sheets["Mapped_Data"]
+
+        for idx, col in enumerate(df.columns, start=1):
             series = df[col].astype(str)
             max_len = max(series.map(len).max(), len(col)) + 4
-            worksheet.column_dimensions[chr(65 + idx)].width = max_len
-            
+            worksheet.column_dimensions[
+                chr(64 + idx)
+            ].width = min(max_len, 50)
+
     output.seek(0)
-    
-    # Determine filename (swap .csv to .xlsx)
-    new_filename = file.filename.replace('.csv', '.xlsx')
-    
+
+    original_name = file.filename or "bulk_mapping.csv"
+
+    if original_name.lower().endswith(".csv"):
+        new_filename = original_name[:-4] + ".xlsx"
+    else:
+        new_filename = original_name + ".xlsx"
+
     return StreamingResponse(
-        output, 
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f"attachment; filename={new_filename}"}
+        output,
+        media_type=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        ),
+        headers={
+            "Content-Disposition":
+            f"attachment; filename={new_filename}"
+        }
     )
 
 @app.get("/api/v1/audit-logs", tags=["Enterprise Features"])
