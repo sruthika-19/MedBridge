@@ -420,6 +420,7 @@ const tradCode = codingList[0] ? codingList[0].code : "Not available";
 const icdCode = codingList[1] ? codingList[1].code : "Not available";
 const systemName = res.system || "Not available";
 const modernEq = res.modernEquivalent || "Not available";
+    const normalizedConcept = res.normalizedTerm || res.normalized_concept || "Not available";
 const tradTerm = res.code && res.code.text ? res.code.text : "Not available";
 const confScore = res.confidenceScore || "Not available";
     const mappingStatus = res.mappingStatus || "Not available";
