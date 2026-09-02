@@ -438,7 +438,7 @@ const source = res.source || {};
                     <h5 class="fw-bold mb-0" style="color: rgba(0, 229, 255, 0.85); font-size: 1.1rem;">🧬 AI MEDICINE TWIN</h5>
                     <span class="badge px-2 py-1 fw-semibold" style="background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); color: rgba(0, 229, 255, 0.85); border-radius: 12px; font-size: 0.8rem;">Confidence: ${confScore}</span>
                 </div>
-                
+                <div class="mb-2"><strong style="opacity: 0.7;">AI Match Confidence:</strong> <span class="badge bg-secondary">${confScore}</span></div>
                 <div class="mb-2"><strong style="opacity: 0.7;">Traditional:</strong> <span class="text-light">${tradTerm}</span> <span class="text-muted" style="font-size: 0.8rem;">(${systemName})</span></div>
                <div class="mb-2"><strong style="opacity: 0.7;">Mapping Status:</strong> <span class="badge bg-secondary">${mappingStatus}</span></div>
                 <div class="mb-2"><strong style="opacity: 0.7;">Match Status:</strong> <span class="badge bg-secondary">${matchStatus}</span></div>
