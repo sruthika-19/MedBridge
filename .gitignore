@@ -10,3 +10,4 @@ audit_log.txt
 
 # Environment variables
 .env
+audit_log.jsonl
