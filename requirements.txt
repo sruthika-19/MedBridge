@@ -7,3 +7,4 @@ python-multipart
 python-dotenv
 requests
 groq
+supabase

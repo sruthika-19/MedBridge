@@ -9,13 +9,14 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from ai_scribe import extract_and_bundle_notes
-from fastapi import FastAPI, BackgroundTasks, File, UploadFile
+from fastapi import FastAPI, BackgroundTasks, File, UploadFile, Depends
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from search_engine import search_disease
 from fastapi.responses import StreamingResponse, PlainTextResponse, HTMLResponse
 from typing import Optional
+from auth import require_authenticated_user, require_role
 
 app = FastAPI(title = "MedBridge API")
 
@@ -62,7 +63,12 @@ def log_audit(term: str):
         f.write(f"[{datetime.datetime.now()}] SEARCH QUERY: '{term}' | STATUS: Logged\n")
 
 @app.get("/sync/{disease_name}", summary="Search Traditional Term",tags=["EMR Integration"])
-def get_icd_code(disease_name: str, system: Optional[str] = None, background_tasks: BackgroundTasks = None):
+def get_icd_code(
+    disease_name: str,
+    system: Optional[str] = None,
+    background_tasks: BackgroundTasks = None,
+    _: dict = Depends(require_authenticated_user),
+):
     if background_tasks:
         background_tasks.add_task(log_audit, f"{disease_name} (System: {system})")
     
@@ -70,7 +76,12 @@ def get_icd_code(disease_name: str, system: Optional[str] = None, background_tas
     return result
 
 @app.post("/api/v1/map")
-def map_term(request: MappingRequest, system: Optional[str] = None, background_tasks: BackgroundTasks = None):
+def map_term(
+    request: MappingRequest,
+    system: Optional[str] = None,
+    background_tasks: BackgroundTasks = None,
+    _: dict = Depends(require_authenticated_user),
+):
     if background_tasks:
         background_tasks.add_task(log_audit, f"{request.term} (System: {system})")
         
@@ -78,13 +89,20 @@ def map_term(request: MappingRequest, system: Optional[str] = None, background_t
     return result
 
 @app.post("/api/v1/ai-scribe", tags=["Advanced AI Layer"])
-def ai_clinical_scribe(request: ScribeRequest, background_tasks: BackgroundTasks = None):
+def ai_clinical_scribe(
+    request: ScribeRequest,
+    background_tasks: BackgroundTasks = None,
+    _: dict = Depends(require_authenticated_user),
+):
     if background_tasks:
         background_tasks.add_task(log_audit, f"AI Scribe processed notes (Length: {len(request.notes)})")
     return extract_and_bundle_notes(request.notes)
 
 @app.post("/api/v1/bulk-map", tags=["Enterprise Features"])
-async def bulk_map_xlsx(file: UploadFile = File(...)):
+async def bulk_map_xlsx(
+    file: UploadFile = File(...),
+    _: dict = Depends(require_role("admin")),
+):
     content = await file.read()
     text = content.decode("utf-8")
     
@@ -145,7 +163,9 @@ async def bulk_map_xlsx(file: UploadFile = File(...)):
     )
 
 @app.get("/api/v1/audit-logs", tags=["Enterprise Features"])
-def get_audit_logs():
+def get_audit_logs(
+    _: dict = Depends(require_role("admin")),
+):
     log_file = "audit_log.txt"
     if os.path.exists(log_file):
         with open(log_file, "r") as f:
@@ -168,7 +188,11 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return round(R * c, 2)
 
 @app.post("/api/v1/nearby-clinics", tags=["IoT Referral System"])
-async def get_nearby_clinics(req: LocationRequest, background_tasks: BackgroundTasks = None):
+async def get_nearby_clinics(
+    req: LocationRequest,
+    background_tasks: BackgroundTasks = None,
+    _: dict = Depends(require_authenticated_user),
+):
     try:
         if background_tasks:
             background_tasks.add_task(log_audit, f"Live Geo-Routing requested for coordinates ({req.latitude}, {req.longitude})")
@@ -301,7 +325,11 @@ def send_email_background(req: ReferralRequest):
         log_audit(f"Email Referral FAILED for {req.clinic_name}: {e}")
 
 @app.post("/api/v1/send-referral", tags=["IoT Referral System"])
-async def trigger_referral(req: ReferralRequest, background_tasks: BackgroundTasks):
+async def trigger_referral(
+    req: ReferralRequest,
+    background_tasks: BackgroundTasks,
+    _: dict = Depends(require_authenticated_user),
+):
     background_tasks.add_task(send_email_background, req)
     return {"status": "success", "message": "Secure email dispatched"}
 

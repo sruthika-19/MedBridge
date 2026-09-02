@@ -57,9 +57,24 @@ if (diseaseInput && searchButton) {
         `;
 
         try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+
+            if (!session) {
+                result.innerHTML = `
+                    <div class="alert-danger text-center mt-4 p-3 rounded">
+                        Your session has expired. Please log in again.
+                    </div>
+                `;
+                showToast("Please log in again.", "error");
+                return;
+            }
+
             const response = await fetch(`/api/v1/ai-scribe`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${session.access_token}`
+                },
                 body: JSON.stringify({ notes: notesText })
             });
             const data = await response.json();
@@ -446,9 +461,17 @@ if (togglePassword && passwordInput) {
     });
 }
 
+const supabaseUrl = 'https://xcqbkukofmswjxjuzyqw.supabase.co';
+const supabaseKey = 'sb_publishable_cj81k7F5rEs7YhRerW5H9w_UwaQIylv6527';
+
+const supabaseClient = window.supabase.createClient(
+    supabaseUrl,
+    supabaseKey
+);
+
 // --- SESSION PROTECTION & SIGN OUT ---
 async function checkUserSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     
     // If no active session and we are not already on the login page, redirect!
     if ((!session && window.location.pathname.includes('index.html')) || (!session && window.location.pathname.includes('admin.html'))) {

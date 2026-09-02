@@ -4,5 +4,6 @@ __pycache__/
 
 # Add these lines to ignore local databases and logs
 .env
+.env.local
 audit_log.txt
-*.loggit commit --amend -m "feat: complete robust backend with Groq integration, FHIR bundling, and
+*.log
