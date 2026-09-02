@@ -6,6 +6,7 @@ import pandas as pd
 import math
 import requests
 import smtplib
+import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from ai_scribe import extract_and_bundle_notes
@@ -58,21 +59,77 @@ app.add_middleware(
     allow_headers=["*"], 
 )
 
-def log_audit(term: str):
-    with open("audit_log.txt", "a", encoding="utf-8") as f:
-        f.write(f"[{datetime.datetime.now()}] SEARCH QUERY: '{term}' | STATUS: Logged\n")
+def log_audit(
+    action: str,
+    input_term: str = None,
+    status: str = "success",
+    user: dict = None,
+    mapping: dict = None,
+    source: str = None
+):
+    """
+    Write one structured JSONL audit event.
+
+    Do not store passwords, tokens, API keys, or full patient records.
+    """
+
+    user_id = None
+    role = None
+
+    if user:
+        user_id = user.get("id") or user.get("userId")
+        role = user.get("role")
+
+    audit_event = {
+        "timestamp": datetime.datetime.now(
+            datetime.timezone.utc
+        ).isoformat(),
+
+        "userId": user_id,
+        "role": role,
+
+        "action": action,
+        "inputTerm": input_term,
+
+        "status": status,
+
+        "mapping": mapping,
+        "source": source
+    }
+
+    with open(
+        "audit_log.txt",
+        "a",
+        encoding="utf-8"
+    ) as f:
+        f.write(
+            json.dumps(
+                audit_event,
+                ensure_ascii=False
+            ) + "\n"
+        )
 
 @app.get("/sync/{disease_name}", summary="Search Traditional Term",tags=["EMR Integration"])
 def get_icd_code(
     disease_name: str,
     system: Optional[str] = None,
     background_tasks: BackgroundTasks = None,
-    _: dict = Depends(require_authenticated_user),
+    user: dict = Depends(require_authenticated_user),
 ):
+    result = search_disease(
+        disease_name,
+        system_filter=system
+    )
+
     if background_tasks:
-        background_tasks.add_task(log_audit, f"{disease_name} (System: {system})")
-    
-    result = search_disease(disease_name, system_filter=system)
+        background_tasks.add_task(
+            log_audit,
+            "TERM_SEARCH",
+            disease_name,
+            result.get("status", "error"),
+            user
+        )
+
     return result
 
 @app.post("/api/v1/map")
@@ -80,23 +137,42 @@ def map_term(
     request: MappingRequest,
     system: Optional[str] = None,
     background_tasks: BackgroundTasks = None,
-    _: dict = Depends(require_authenticated_user),
+    user: dict = Depends(require_authenticated_user),
 ):
+    result = search_disease(
+        request.term,
+        system_filter=system
+    )
+
     if background_tasks:
-        background_tasks.add_task(log_audit, f"{request.term} (System: {system})")
-        
-    result = search_disease(request.term, system_filter=system)
+        background_tasks.add_task(
+            log_audit,
+            "TERM_MAPPING",
+            request.term,
+            result.get("status", "error"),
+            user
+        )
+
     return result
 
 @app.post("/api/v1/ai-scribe", tags=["Advanced AI Layer"])
 def ai_clinical_scribe(
     request: ScribeRequest,
     background_tasks: BackgroundTasks = None,
-    _: dict = Depends(require_authenticated_user),
+    user: dict = Depends(require_authenticated_user),
 ):
+    result = extract_and_bundle_notes(request.notes)
+
     if background_tasks:
-        background_tasks.add_task(log_audit, f"AI Scribe processed notes (Length: {len(request.notes)})")
-    return extract_and_bundle_notes(request.notes)
+        background_tasks.add_task(
+            log_audit,
+            "AI_SCRIBE",
+            "clinical_notes",
+            result.get("status", "error"),
+            user
+        )
+
+    return result
 
 @app.post("/api/v1/bulk-map", tags=["Enterprise Features"])
 async def bulk_map_xlsx(
