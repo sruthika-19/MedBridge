@@ -46,6 +46,22 @@ def create_database():
             VALUES (?, ?, ?, ?, ?)
         """, data_to_insert)
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS namaste_terms (
+                rec_id INTEGER PRIMARY KEY,
+                t_id INTEGER,
+                term_id TEXT,
+                term_devanagari TEXT,
+                term_iast TEXT,
+                wordtree TEXT,
+                parent_id INTEGER,
+                def_id INTEGER,
+                w_trans TEXT,
+                w_def TEXT,
+                refn TEXT
+            )
+        """)
+
         conn.commit()
         print(f"Success! {len(data_to_insert)} records cleanly inserted into '{db_filename}'.")
         
