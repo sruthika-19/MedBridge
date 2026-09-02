@@ -4,6 +4,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from who_service import search_who_api
 from medicine_twin import get_medicine_twin_data
+from search_namaste import search_namaste
+from mapping_validator import validate_mapping
 
 DB_FILE = "mappings.db"
 
@@ -89,6 +91,27 @@ def normalize_term(term):
 
     return " ".join(term.lower().strip().split())
 
+
+def normalize_for_match(term):
+    """
+    Normalize terminology for comparison.
+
+    Removes common terminal punctuation/markers used in
+    NAMASTE transliteration such as visarga (ḥ) and colon.
+    """
+    if not term:
+        return ""
+
+    value = term.lower().strip()
+
+    # Remove common Sanskrit transliteration markers at the end
+    value = value.rstrip("ḥ:")
+
+    # Normalize whitespace
+    value = " ".join(value.split())
+
+    return value
+
 def search_local_mappings(normalized_term, rows):
     """
     Search local icd_mappings using exact, alias,
@@ -158,6 +181,75 @@ def search_local_mappings(normalized_term, rows):
 
     return matched_data
 
+def search_namaste_mappings(normalized_term, system_filter=None):
+    """
+    Search the official NAMASTE terminology table first.
+
+    Returns NAMASTE candidates in the format expected
+    by the MedBridge search pipeline.
+    """
+
+    namaste_results = search_namaste(
+        normalized_term,
+        system=system_filter
+    )
+
+    if not namaste_results:
+        return []
+
+    matched_data = []
+
+    for result in namaste_results:
+        term_iast = result.get("term_iast")
+        wordtree = result.get("wordtree")
+        translation = result.get("w_trans")
+        definition = result.get("w_def")
+
+        # Prefer the traditional term itself.
+        traditional_term = term_iast or wordtree
+
+        if not traditional_term:
+            continue
+
+        # Existing MedBridge mappings can provide a modern
+        # clinical concept when we already know the term.
+        modern_term = modern_mapping.get(
+            normalized_term,
+            translation or definition or "Standardized Clinical Concept"
+        )
+
+        input_for_match = normalize_for_match(normalized_term)
+        term_iast_for_match = normalize_for_match(term_iast)
+        wordtree_for_match = normalize_for_match(wordtree)
+
+        if input_for_match in (
+            term_iast_for_match,
+            wordtree_for_match
+        ):
+            match_type = "exact"
+        else:
+            match_type = "candidate"
+
+        matched_data.append({
+            "rec_id": result.get("rec_id"),
+            "t_id": result.get("t_id"),
+            "term_id": result.get("term_id"),
+            "term_devanagari": result.get("term_devanagari"),
+            "term_iast": term_iast,
+            "wordtree": wordtree,
+            "parent_id": result.get("parent_id"),
+            "def_id": result.get("def_id"),
+            "w_trans": translation,
+            "w_def": definition,
+            "refn": result.get("refn"),
+            "sys_id": result.get("sys_id"),
+            "traditionalTerm": traditional_term,
+            "modernEquivalent": modern_term,
+            "matchType": match_type
+        })
+
+    return matched_data[:3]
+
 def search_disease(term_query, system_filter=None):
     if not term_query or not term_query.strip():
         return {
@@ -176,51 +268,254 @@ def search_disease(term_query, system_filter=None):
             "message": "Invalid clinical search term. Please enter a valid diagnosis name.",
             "data": []
         }
-    
+
+    # ---------------------------------------------------------
+    # 1. SEARCH OFFICIAL NAMASTE TERMINOLOGY FIRST
+    # ---------------------------------------------------------
+
+    namaste_results = search_namaste_mappings(
+        normalized_term,
+        system_filter
+    )
+
+    if namaste_results:
+
+        final_results = []
+
+        # Use the strongest NAMASTE candidate first
+        for namaste in namaste_results:
+
+            modern_term = namaste.get(
+                "modernEquivalent"
+            )
+
+            # -------------------------------------------------
+            # 2. SEARCH WHO ICD-11
+            # -------------------------------------------------
+
+            who_query = modern_term or normalized_term
+
+            who_res = search_who_api(who_query)
+
+            icd11_data = None
+
+            if (
+                who_res.get("status") == "success"
+                and who_res.get("data")
+            ):
+                who_result = who_res["data"][0]
+
+                coding = (
+                    who_result
+                    .get("code", {})
+                    .get("coding", [])
+                )
+
+                # Find the actual WHO ICD-11 coding
+                for coding_item in coding:
+                    if coding_item.get("system") == (
+                        "http://id.who.int/icd/release/11/mms"
+                    ):
+                        icd11_data = {
+                            "code": coding_item.get("code"),
+                            "term": (
+                                coding_item.get("display")
+                                or who_result.get("modernEquivalent")
+                            ),
+                            "uri": coding_item.get("uri")
+                        }
+                        break
+
+            # -------------------------------------------------
+            # 3. VALIDATE NAMASTE → ICD-11
+            # -------------------------------------------------
+
+            if icd11_data:
+                validation_input = {
+                    **namaste,
+                    "mappingStatus": "candidate"
+                }
+
+                validation = validate_mapping(
+                    validation_input,
+                    icd11_data
+                )
+
+                validation_data = validation.to_dict()
+
+            else:
+                validation_data = {
+                    "validation_status": "invalid",
+                    "reason": "No ICD-11 candidate found"
+                }
+
+            # -------------------------------------------------
+            # 4. BUILD COMBINED RESULT
+            # -------------------------------------------------
+
+            result = {
+                "inputTerm": term_query,
+                "normalizedTerm": normalized_term,
+
+                "sourceRecord": {
+                    "recId": namaste.get("rec_id"),
+                    "sysId": namaste.get("sys_id"),
+                    "termId": namaste.get("term_id"),
+                    "parentId": namaste.get("parent_id"),
+                    "termIast": namaste.get("term_iast"),
+                    "translation": namaste.get("w_trans"),
+                    "definition": namaste.get("w_def"),
+                    "reference": namaste.get("refn")
+                },
+
+                "traditionalTerm": {
+                    "term": namaste.get("traditionalTerm"),
+                    "system": (
+                        str(namaste.get("sys_id"))
+                        if namaste.get("sys_id") is not None
+                        else None
+                    ),
+                    "code": namaste.get("term_id")
+                },
+
+                "namaste": {
+                    "code": namaste.get("term_id"),
+                    "term": namaste.get("traditionalTerm"),
+                    "source": "NAMASTE",
+                    "sourceVersion": None
+                },
+
+                "icd11": (
+                    {
+                        "code": icd11_data.get("code"),
+                        "title": icd11_data.get("term"),
+                        "uri": icd11_data.get("uri"),
+                        "source": "WHO ICD-11"
+                    }
+                    if icd11_data
+                    else None
+                ),
+
+                # Current exact match gets a high score.
+                # Candidate matches use a lower score until
+                # a proper ranked scoring layer is integrated.
+                "matchScore": (
+                    98.0
+                    if namaste.get("matchType") == "exact"
+                    else 80.0
+                ),
+
+                "matchType": namaste.get(
+                    "matchType",
+                    "candidate"
+                ),
+
+                "mappingStatus": (
+                    "candidate"
+                    if icd11_data
+                    else "unverified"
+                ),
+
+                "validationStatus": validation_data[
+                    "validation_status"
+                ],
+
+                "source": "MEDBRIDGE_DERIVED",
+
+                "sourceVersion": None,
+
+                "evidence": [
+                    "Official NAMASTE terminology found"
+                ]
+            }
+
+            if icd11_data:
+                result["evidence"].append(
+                    "WHO ICD-11 candidate found"
+                )
+
+            result["evidence"].append(
+                validation_data["reason"]
+            )
+
+            final_results.append(result)
+
+        return {
+            "status": "success",
+            "count": len(final_results),
+            "data": final_results
+        }
+
+    # ---------------------------------------------------------
+    # 5. TEMPORARY LEGACY FALLBACK
+    # ---------------------------------------------------------
+
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
-    if system_filter and system_filter.strip() and system_filter.lower() != "all":
+    if (
+        system_filter
+        and system_filter.strip()
+        and system_filter.lower() != "all"
+    ):
         cursor.execute("""
-            SELECT system, traditional_term, namaste_code, tm2_code, aliases
+            SELECT
+                system,
+                traditional_term,
+                namaste_code,
+                tm2_code,
+                aliases
             FROM icd_mappings
             WHERE LOWER(system) = LOWER(?)
         """, (system_filter.strip(),))
     else:
         cursor.execute("""
-            SELECT system, traditional_term, namaste_code, tm2_code, aliases
+            SELECT
+                system,
+                traditional_term,
+                namaste_code,
+                tm2_code,
+                aliases
             FROM icd_mappings
         """)
 
     rows = cursor.fetchall()
     conn.close()
 
-    if not rows:
-        return {
-            "status": "error",
-            "errorCode": "DATABASE_ERROR",
-            "message": "Database is empty.",
-            "data": []
-        }
-        
-    matched_data = search_local_mappings(normalized_term, rows)
+    if rows:
+        matched_data = search_local_mappings(
+            normalized_term,
+            rows
+        )
 
-    if matched_data:
-        return {
-            "status": "success",
-            "count": len(matched_data),
-            "data": matched_data
-        }
+        if matched_data:
+            return {
+                "status": "success",
+                "count": len(matched_data),
+                "data": matched_data
+            }
 
-    # If it's a modern clinical term not in the local traditional dataset, instantly query WHO
-    who_res = search_who_api(normalized_term)
+    # ---------------------------------------------------------
+    # 6. WHO FALLBACK
+    # ---------------------------------------------------------
+
+    who_query = modern_mapping.get(
+        normalized_term,
+        normalized_term
+    )
+
+    who_res = search_who_api(who_query)
+
     if who_res.get("status") == "success":
         return who_res
 
     return {
         "status": "error",
         "errorCode": "TERM_NOT_FOUND",
-        "message": f"No reliable clinical mapping found for '{normalized_term}' locally or via WHO API.",
+        "message": (
+            f"No reliable clinical mapping found for "
+            f"'{normalized_term}' locally or via WHO API."
+        ),
         "data": []
     }
 

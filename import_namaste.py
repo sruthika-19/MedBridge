@@ -13,7 +13,7 @@ def import_namaste():
         # Read the official NAMASTE Excel file
         df = pd.read_excel(EXCEL_FILENAME)
 
-        # Verify that the Excel has the expected columns
+        # Exact columns present in the official Excel
         required_columns = [
             "rec_id",
             "t_id",
@@ -25,11 +25,13 @@ def import_namaste():
             "def_id",
             "w_trans",
             "w_def",
-            "refn"
+            "refn",
+            "sys_id"
         ]
 
         missing_columns = [
-            column for column in required_columns
+            column
+            for column in required_columns
             if column not in df.columns
         ]
 
@@ -41,7 +43,7 @@ def import_namaste():
         conn = sqlite3.connect(DB_FILENAME)
         cursor = conn.cursor()
 
-        # Create the NAMASTE table using the exact Excel structure
+        # Create the table if it does not already exist
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS namaste_terms (
                 rec_id INTEGER PRIMARY KEY,
@@ -54,9 +56,28 @@ def import_namaste():
                 def_id INTEGER,
                 w_trans TEXT,
                 w_def TEXT,
-                refn TEXT
+                refn TEXT,
+                sys_id INTEGER
             )
         """)
+
+        # Existing database was created before sys_id was added.
+        # Add the missing column when necessary.
+        existing_columns = [
+            row[1]
+            for row in cursor.execute(
+                "PRAGMA table_info(namaste_terms)"
+            ).fetchall()
+        ]
+
+        if "sys_id" not in existing_columns:
+            cursor.execute(
+                "ALTER TABLE namaste_terms ADD COLUMN sys_id INTEGER"
+            )
+
+        # Clear old imported NAMASTE records before re-importing
+        # so the SQLite table exactly matches the Excel source.
+        cursor.execute("DELETE FROM namaste_terms")
 
         records = []
 
@@ -72,11 +93,12 @@ def import_namaste():
                 row["def_id"],
                 row["w_trans"],
                 row["w_def"],
-                row["refn"]
+                row["refn"],
+                row["sys_id"]
             ))
 
         cursor.executemany("""
-            INSERT OR REPLACE INTO namaste_terms (
+            INSERT INTO namaste_terms (
                 rec_id,
                 t_id,
                 term_id,
@@ -87,9 +109,10 @@ def import_namaste():
                 def_id,
                 w_trans,
                 w_def,
-                refn
+                refn,
+                sys_id
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, records)
 
         conn.commit()
