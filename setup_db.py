@@ -1,61 +1,43 @@
 import sqlite3
-import csv
+
 
 def create_database():
-    csv_filename = "data/data.csv"
     db_filename = "mappings.db"
-    
+
     try:
         conn = sqlite3.connect(db_filename)
         cursor = conn.cursor()
 
-        cursor.execute('DROP TABLE IF EXISTS icd_mappings')
-        
-        cursor.execute('''
-            CREATE TABLE icd_mappings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+        # Preserve the existing icd_mappings table.
+        # Do not drop or recreate it.
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS namaste_terms (
+                id INTEGER PRIMARY KEY,
                 system TEXT,
-                traditional_term TEXT NOT NULL,
-                namaste_code TEXT,
-                tm2_code TEXT NOT NULL,
-                aliases TEXT
+                term_id TEXT,
+                parent_id TEXT,
+                term TEXT,
+                code TEXT,
+                short_definition TEXT,
+                long_definition TEXT,
+                reference TEXT,
+                source TEXT,
+                source_version TEXT
             )
-        ''')
-
-        data_to_insert = []
-        with open(csv_filename, mode='r', encoding='utf-8-sig') as file:
-            reader = csv.reader(file)
-            next(reader)  
-            
-            for row in reader:
-                if len(row) >= 5: 
-
-                    aliases = row[5].strip() if len(row) >= 6 else ""
-
-                    data_to_insert.append((
-                        row[1].strip(), 
-                        row[2].strip(), 
-                        row[3].strip(), 
-                        row[4].strip(),
-                        aliases
-                    ))
-        
-        cursor.executemany("""
-            INSERT INTO icd_mappings
-            (system, traditional_term, namaste_code, tm2_code, aliases)
-            VALUES (?, ?, ?, ?, ?)
-        """, data_to_insert)
+        """)
 
         conn.commit()
-        print(f"Success! {len(data_to_insert)} records cleanly inserted into '{db_filename}'.")
-        
-    except FileNotFoundError:
-        print(f"Error: Could not find '{csv_filename}'. Please ensure it is in the correct folder.")
+        print(f"Success! Database '{db_filename}' is ready.")
+        print("Table 'namaste_terms' is ready.")
+
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
     finally:
-        if 'conn' in locals():
+        if "conn" in locals():
             conn.close()
+
 
 if __name__ == "__main__":
     create_database()
