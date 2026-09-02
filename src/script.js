@@ -462,7 +462,7 @@ if (togglePassword && passwordInput) {
 }
 
 const supabaseUrl = 'https://xcqbkukofmswjxjuzyqw.supabase.co';
-const supabaseKey = 'sb_publishable_cj81k7F5rEs7YhRerW5H9w_UwaQIylv6527';
+const supabaseKey = 'sb_publishable_cj81k7F5rEs7YhRerW5H9w_UwaQIylv';
 
 const supabaseClient = window.supabase.createClient(
     supabaseUrl,

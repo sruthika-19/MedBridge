@@ -1,5 +1,5 @@
 import sqlite3
-import difflib
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from who_service import search_who_api
@@ -89,6 +89,75 @@ def normalize_term(term):
 
     return " ".join(term.lower().strip().split())
 
+def search_local_mappings(normalized_term, rows):
+    """
+    Search local icd_mappings using exact, alias,
+    and TF-IDF similarity matching.
+    """
+    documents = []
+    doc_row_mapping = []
+
+    for row in rows:
+        trad_term = row[1]
+        aliases = row[4] or ""
+
+        combined_text = f"{trad_term} {aliases.replace('|', ' ')}"
+        documents.append(combined_text)
+        doc_row_mapping.append(row)
+
+    if not documents:
+        return []
+
+    vectorizer = TfidfVectorizer(
+        lowercase=True,
+        stop_words="english"
+    )
+
+    tfidf_matrix = vectorizer.fit_transform(documents)
+    query_vector = vectorizer.transform([normalized_term])
+
+    cosine_scores = cosine_similarity(
+        query_vector,
+        tfidf_matrix
+    ).flatten()
+
+    top_indices = cosine_scores.argsort()[::-1][:3]
+
+    matched_data = []
+
+    for idx in top_indices:
+        score = cosine_scores[idx]
+        row = doc_row_mapping[idx]
+
+        trad_term = row[1].lower()
+
+        aliases_list = [
+            alias.strip().lower()
+            for alias in (row[4] or "").split("|")
+            if alias.strip()
+        ]
+
+        if normalized_term == trad_term:
+            confidence = 98.0
+
+        elif normalized_term in aliases_list:
+            confidence = 95.0
+
+        elif score > 0.1:
+            confidence = round(float(score) * 100, 1)
+
+            if confidence > 90:
+                confidence = 90.0
+
+        else:
+            continue
+
+        matched_data.append(
+            build_fhir_payload(row, confidence)
+        )
+
+    return matched_data
+
 def search_disease(term_query, system_filter=None):
     if not term_query or not term_query.strip():
         return {
@@ -133,48 +202,8 @@ def search_disease(term_query, system_filter=None):
             "message": "Database is empty.",
             "data": []
         }
-
-    query = normalized_term
-
-    documents = []
-    doc_row_mapping = []
-    
-    for row in rows:
-        trad_term = row[1]
-        aliases = row[4] or ""
-        combined_text = f"{trad_term} {aliases.replace('|', ' ')}"
-        documents.append(combined_text)
-        doc_row_mapping.append(row)
         
-    # Compute TF-IDF and Cosine Similarity across local database
-    vectorizer = TfidfVectorizer(lowercase=True, stop_words='english')
-    tfidf_matrix = vectorizer.fit_transform(documents)
-    query_vector = vectorizer.transform([query])
-    
-    cosine_scores = cosine_similarity(query_vector, tfidf_matrix).flatten()
-    
-    # Sort indices by score descending and take top 3
-    top_indices = cosine_scores.argsort()[::-1][:3]
-
-    matched_data = []
-    for idx in top_indices:
-        score = cosine_scores[idx]
-        row = doc_row_mapping[idx]
-        trad_term = row[1].lower()
-        aliases_list = [a.strip().lower() for a in (row[4] or "").split('|') if a.strip()]
-
-        # Assign smart confidence percentages based on match type & score
-        if query == trad_term:
-            confidence = 98.0
-        elif query in aliases_list:
-            confidence = 95.0
-        elif score > 0.1:
-            confidence = round(float(score) * 100, 1)
-            if confidence > 90: confidence = 90.0
-        else:
-            continue # Skip low-relevance noise
-
-        matched_data.append(build_fhir_payload(row, confidence))
+    matched_data = search_local_mappings(normalized_term, rows)
 
     if matched_data:
         return {
