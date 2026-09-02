@@ -136,12 +136,16 @@ def extract_and_bundle_notes(doctor_paragraph: str):
 
         mapping = search_result["data"][0]
 
-        condition_id = f"condition-demo-{index}"
-
         namaste = mapping.get("namaste") or {}
         icd11 = mapping.get("icd11") or {}
         traditional = mapping.get("traditionalTerm") or {}
 
+        # Do not create a FHIR Condition for an unmapped term.
+        # Prevents fake 0% / empty-code conditions from appearing in AI Scribe.
+        if not namaste.get("code") and not icd11.get("code"):
+            continue
+
+        condition_id = f"condition-demo-{index}"
         coding = []
 
         # -----------------------------------------------------

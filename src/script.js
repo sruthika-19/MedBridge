@@ -8,14 +8,14 @@ const emrIntegration = document.getElementById("emrIntegration");
 if (diseaseInput && searchButton) {
     diseaseInput.addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
-            event.preventDefault(); 
-            searchButton.click();   
+            event.preventDefault();
+            searchButton.click();
         }
     });
 
     searchButton.addEventListener("click", async function (event) {
-        event.preventDefault(); 
-        
+        event.preventDefault();
+
         const notesText = diseaseInput.value.trim();
         emrIntegration.innerHTML = "";
 
@@ -85,8 +85,25 @@ if (diseaseInput && searchButton) {
                 Array.isArray(data.bundle.entry) &&
                 data.bundle.entry.length > 0
             ) {
-                window.lastRawJSON = JSON.stringify(data.bundle, null, 2); 
-                const entries = data.bundle.entry;
+                window.lastRawJSON = JSON.stringify(data.bundle, null, 2);
+                const entries = data.bundle.entry.filter(
+                    entry => entry.resource?.resourceType === "Condition"
+                );
+
+                if (entries.length === 0) {
+                    const errorMessage =
+                        data.message || "No mapped clinical conditions were found.";
+
+                    result.innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Mapping Error</strong><br>
+                            ${errorMessage}
+                        </div>
+                    `;
+
+                    showToast(errorMessage, "error");
+                    return;
+                }
 
                 // 1. Top Differential Candidate Pills (Top 3)
                 let cardsHtml = `
@@ -94,14 +111,42 @@ if (diseaseInput && searchButton) {
                         <h6 class="text-info fw-bold mb-2">🎯 TOP DIFFERENTIAL MATCHES (Click to Select)</h6>
                         <div class="d-flex flex-wrap gap-2">
                 `;
-                
-                entries.forEach((entry, index) => {
-                    const res = entry.resource;
-                    const score = res.confidenceScore || "90%";
+
+            entries.forEach((entry, index) => {
+                const res = entry.resource || {};
+
+                const codingList = res.code?.coding || [];
+
+                const namasteCoding =
+                    codingList.find(c =>
+                        c.system === "https://terminology.ayush.gov.in/namaste"
+                    ) || {};
+
+                const candidateScore =
+                    res.matchScore !== undefined
+                        ? `${res.matchScore}%`
+                        : (() => {
+                            const ext = res.extension?.find(
+                                e => e.url === "https://medbridge.local/fhir/StructureDefinition/match-score"
+                            );
+
+                            return ext?.valueDecimal !== undefined
+                                ? `${ext.valueDecimal}%`
+                                : (res.confidenceScore || "Not available");
+                        })();
+
+                const candidateTerm =
+                    res.traditionalTerm?.term ||
+                    res.namaste?.term ||
+                    namasteCoding.display ||
+                    res.code?.text ||
+                    res.inputTerm ||
+                    "Unknown term";
+
                     const badgeColor = index === 0 ? "bg-success text-white" : index === 1 ? "bg-warning text-dark" : "bg-secondary text-white";
                     cardsHtml += `
                         <button type="button" class="btn btn-sm ${badgeColor} fw-semibold px-3 py-1 rounded-pill" onclick="selectCandidate(${index})">
-                            🟢 (${index + 1}) ${res.code.text} - ${score}
+                            🟢 (${index + 1}) ${candidateTerm} - ${candidateScore}
                         </button>
                     `;
                 });
@@ -165,15 +210,6 @@ if (diseaseInput && searchButton) {
             }
         });
 }
-
-
-window.showAIExplanation = function() {
-    alert("Explainable AI (XAI): Match generated using scikit-learn TF-IDF cosine similarity (96% weight) combined with WHO ICD-11 TM2 ontology cross-walk mapping.");
-};
-
-window.togglePatientView = function() {
-    alert("Layman Summary:\n• Condition: Fever / Body Heat\n• Purpose: Reduces temperature & clears inflammation\n• Caution: Avoid combining with strong blood thinners without consulting your physician.");
-};
 
 // Voice Recognition setup
 const SpeechRecognition =
@@ -281,7 +317,7 @@ if (bulkUploadBtn && csvFileInput) {
         showToast("Initiating enterprise bulk standardization...", 'info');
         event.preventDefault();
         const file = csvFileInput.files[0];
-        
+
         if (!file) {
             bulkResult.innerHTML = "<span class='text-danger'>Please select a .csv file first!</span>";
             return;
@@ -304,10 +340,10 @@ if (bulkUploadBtn && csvFileInput) {
                 const a = document.createElement("a");
                 a.href = downloadUrl;
                 a.download = `MedBridge_Standardized_${file.name.replace('.csv', '.xlsx')}`;                document.body.appendChild(a);
-                document.body.appendChild(a);    
+                document.body.appendChild(a);
                 a.click();
                 a.remove();
-                
+
                 bulkResult.innerHTML = "✅ Success! File standardized and downloaded.";
 
             } else {
@@ -422,11 +458,11 @@ function showToast(message, type = 'success') {
 
     const toast = document.createElement('div');
     toast.className = 'custom-toast';
-    
+
     let icon = '✅';
     if (type === 'error') icon = '❌';
     if (type === 'info') icon = 'ℹ️';
-    
+
     toast.innerHTML = `<span style="font-size: 1.2rem;">${icon}</span> <span>${message}</span>`;
     container.appendChild(toast);
 
@@ -472,7 +508,7 @@ const supabaseClient = window.supabase.createClient(
 // --- SESSION PROTECTION & SIGN OUT ---
 async function checkUserSession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    
+
     // If no active session and we are not already on the login page, redirect!
     if ((!session && window.location.pathname.includes('index.html')) || (!session && window.location.pathname.includes('admin.html'))) {
         window.location.href = '/src/login.html'; // Updated path
@@ -486,14 +522,14 @@ if (window.supabase) {
 
 // Global Sign Out Function
 window.handleSignOut = async function(event) {
-    if(event) 
+    if(event)
         event.preventDefault();
     localStorage.removeItem('userRole');
     localStorage.clear();
     sessionStorage.clear();
 
     try {
-        const sb = window.supabaseClient || window.supabase || supabase; 
+        const sb = window.supabaseClient || window.supabase || supabase;
         if (typeof sb !== 'undefined' && sb.auth) {
             await sb.auth.signOut();
         }
@@ -523,52 +559,163 @@ window.selectCandidate = function(index) {
 window.renderCandidateCard = function(entry, index) {
     const res = entry.resource || {};
     const medTwin = res.medicineTwin || {};
-    
+
+    const codingList = res.code?.coding || [];
+
+    const namasteCoding =
+        codingList.find(c =>
+            c.system === "https://terminology.ayush.gov.in/namaste"
+        ) || {};
+
+    const icdCoding =
+        codingList.find(c =>
+            c.system === "http://id.who.int/icd/release/11/mms"
+        ) || {};
+
+    const getExtensionValue = (url) => {
+        const ext = res.extension?.find(e => e.url === url);
+
+        if (!ext) return null;
+
+        return (
+            ext.valueDecimal ??
+            ext.valueInteger ??
+            ext.valueString ??
+            ext.valueCode ??
+            null
+        );
+    };
+
+    const fhirMatchScore =
+        getExtensionValue("https://medbridge.local/fhir/StructureDefinition/match-score");
+
+    const fhirMatchType =
+        getExtensionValue("https://medbridge.local/fhir/StructureDefinition/match-type");
+
+    const fhirMappingStatus =
+        getExtensionValue("https://medbridge.local/fhir/StructureDefinition/mapping-status");
+
+    const fhirValidationStatus =
+        getExtensionValue("https://medbridge.local/fhir/StructureDefinition/validation-status");
+
     // Multi-key fallbacks
     const rawIngredients = medTwin.activeIngredients || medTwin.ingredients || medTwin.active_ingredients;
-    const ingredients = rawIngredients ? 
-        (Array.isArray(rawIngredients) ? rawIngredients.join(", ") : rawIngredients) 
+    const ingredients = rawIngredients ?
+        (Array.isArray(rawIngredients) ? rawIngredients.join(", ") : rawIngredients)
         : "Nilavembu, Papaya leaf extract, Nilavembu kudineer chooranam";
 
     const rawUses = medTwin.traditionalUses || medTwin.traditional_uses || medTwin.uses;
-    const traditionalUses = rawUses ? 
-        (Array.isArray(rawUses) ? rawUses.join(", ") : rawUses) 
+    const traditionalUses = rawUses ?
+        (Array.isArray(rawUses) ? rawUses.join(", ") : rawUses)
         : "Antipyretic, Anti-inflammatory, Immune Support";
 
     const rawRisk = medTwin.riskRadar || medTwin.risk_warnings || medTwin.risk_alerts || medTwin.alerts;
-    const riskAlert = rawRisk ? 
-        (Array.isArray(rawRisk) ? rawRisk[0] : rawRisk) 
+    const riskAlert = rawRisk ?
+        (Array.isArray(rawRisk) ? rawRisk[0] : rawRisk)
         : "Monitor patient if co-prescribing with modern NSAIDs (e.g., Ibuprofen) due to compound toxicity risks.";
 
-    const codingList = res.code && res.code.coding ? res.code.coding : [];
-    const tradCode = codingList[0] ? codingList[0].code : "SID-135";
-    const icdCode = codingList[1] ? codingList[1].code : "SP52";
-    const systemName = res.system || "Siddha";
-    const modernEq = res.modernEquivalent || "Standardized Clinical Presentation";
-    const tradTerm = res.code.text || "Traditional Presentation";
-    const confScore = res.confidenceScore || "94.0%";
+    const traditional = res.traditionalTerm || {};
+    const namaste = res.namaste || {};
+    const icd11 = res.icd11 || {};
+
+    const tradCode =
+        namaste.code ||
+        traditional.code ||
+        namasteCoding.code ||
+        "Not available";
+
+    const icdCode =
+        icd11.code ||
+        icdCoding.code ||
+        "Not available";
+
+    const systemName =
+        traditional.system ||
+        res.system ||
+        "Not specified";
+
+    const modernEq =
+        icd11.title ||
+        res.modernEquivalent ||
+        icdCoding.display ||
+        "Not available";
+
+    const tradTerm =
+        traditional.term ||
+        namaste.term ||
+        namasteCoding.display ||
+        res.code?.text ||
+        res.inputTerm ||
+        "Not available";
+
+    const confScore =
+        res.matchScore !== undefined
+            ? `${res.matchScore}%`
+            : fhirMatchScore !== null
+                ? `${fhirMatchScore}%`
+                : (res.confidenceScore || "Not available");
+
+    const mappingStatus =
+        res.mappingStatus ||
+        fhirMappingStatus ||
+        "unverified";
+
+    const validationStatus =
+        res.validationStatus ||
+        fhirValidationStatus ||
+        "not_checked";
+
+    const matchType =
+        res.matchType ||
+        fhirMatchType ||
+        "candidate";
+
+    const evidence =
+        Array.isArray(res.evidence)
+            ? res.evidence
+            : [];
 
     return `
         <!-- Flexbox wrapper to guarantee side-by-side layout on desktop -->
         <div class="d-flex flex-column flex-lg-row gap-4 mb-4 align-items-stretch w-100">
-            
+
             <!-- Left: AI Medicine Twin (Takes ~66% space) -->
             <div class="glass-panel p-4 border border-secondary shadow-sm text-light d-flex flex-column" style="flex: 2; background: rgba(15, 23, 42, 0.6) !important; border-radius: 12px;">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold mb-0" style="color: rgba(0, 229, 255, 0.85); font-size: 1.1rem;">🧬 AI MEDICINE TWIN</h5>
                     <span class="badge px-2 py-1 fw-semibold" style="background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); color: rgba(0, 229, 255, 0.85); border-radius: 12px; font-size: 0.8rem;">Confidence: ${confScore}</span>
                 </div>
-                
+
                 <div class="mb-2"><strong style="opacity: 0.7;">Traditional:</strong> <span class="text-light">${tradTerm}</span> <span class="text-muted" style="font-size: 0.8rem;">(${systemName})</span></div>
                 <div class="mb-2" style="color: rgba(56, 189, 248, 0.9);"><strong>↳ NAMASTE Code:</strong> ${tradCode}</div>
                 <div class="mb-2"><strong style="opacity: 0.7;">Modern Equivalent:</strong> <span class="text-light">${modernEq}</span></div>
                 <div class="mb-3" style="color: rgba(52, 211, 153, 0.9);"><strong>↳ WHO ICD-11 (TM2):</strong> ${icdCode}</div>
+                <div class="mb-2">
+                    <strong style="opacity: 0.7;">Mapping Status:</strong>
+                    ${mappingStatus}
+                </div>
 
+                <div class="mb-2">
+                    <strong style="opacity: 0.7;">Validation:</strong>
+                    ${validationStatus}
+                </div>
+
+                <div class="mb-2">
+                    <strong style="opacity: 0.7;">Match Type:</strong>
+                    ${matchType}
+                </div>
                 <hr class="border-secondary my-3" style="opacity: 0.3;">
-                
+
                 <p class="mb-1 fw-bold" style="color: rgba(56, 189, 248, 0.85); font-size: 0.9rem;">Active Botanical Ingredients:</p>
                 <p class="text-light small mb-3" style="opacity: 0.8;">${ingredients}</p>
-                
+
+                <p class="mb-1 fw-bold" style="color: rgba(56, 189, 248, 0.85); font-size: 0.9rem;">
+                    Traditional Uses:
+                </p>
+                <p class="text-light small mb-3" style="opacity: 0.8;">
+                    ${traditionalUses}
+                </p>
+
                 <!-- NEW IOT LOCATION BUTTON -->
                 <button class="btn btn-sm w-100 fw-bold py-2 mt-2" style="background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.4); color: rgba(0, 229, 255, 0.9); border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(0, 229, 255, 0.2)'" onmouseout="this.style.background='rgba(0, 229, 255, 0.1)'" onclick="findNearbyClinics('${systemName}')">
                     📍 Find Nearby ${systemName} Clinics (IoT)
@@ -587,46 +734,179 @@ window.renderCandidateCard = function(entry, index) {
                 <button class="btn btn-sm w-100 fw-bold py-2 mt-auto" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); color: rgba(251, 191, 36, 0.85); border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'" onclick="showToast('Warning acknowledged & logged to ABDM audit trail.', 'success')">
                     ✅ Acknowledge Warning
                 </button>
+
+                <div class="mt-3">
+                    <strong style="color: rgba(56, 189, 248, 0.85);">Evidence:</strong>
+                    <ul class="small text-light mt-2 mb-0">
+                        ${
+                            evidence.length
+                                ? evidence.map(item => `<li>${item}</li>`).join("")
+                                : "<li>No evidence available</li>"
+                        }
+                    </ul>
+                </div>
             </div>
-            
+
         </div>
     `;
 };
 
 window.showAIExplanation = function() {
     if (window.currentEntries && window.currentEntries.length > 0) {
-        const entry = window.currentEntries[0].resource;
-        const scoreStr = entry.confidenceScore || "0%";
-        const scoreNum = parseFloat(scoreStr);
-        const term = entry.code.text;
-        
-        let matchReason = "Semantic NLP match using TF-IDF cosine similarity.";
-        if (scoreNum >= 98.0) {
-            matchReason = "Exact term match in the standardized terminology registry.";
-        } else if (scoreNum >= 95.0) {
-            matchReason = "Matched via known regional aliases or synonyms.";
+
+        const entry = window.currentEntries[0]?.resource || {};
+
+        const codingList = entry.code?.coding || [];
+
+        const namasteCoding =
+            codingList.find(
+                c => c.system === "https://terminology.ayush.gov.in/namaste"
+            ) || {};
+
+        const icdCoding =
+            codingList.find(
+                c => c.system === "http://id.who.int/icd/release/11/mms"
+            ) || {};
+
+        const getExtensionValue = (url) => {
+            const ext = entry.extension?.find(
+                e => e.url === url
+            );
+
+            if (!ext) return null;
+
+            return (
+                ext.valueDecimal ??
+                ext.valueInteger ??
+                ext.valueString ??
+                ext.valueCode ??
+                null
+            );
+        };
+
+        const scoreValue = getExtensionValue(
+            "https://medbridge.local/fhir/StructureDefinition/match-score"
+        );
+
+        const matchType = getExtensionValue(
+            "https://medbridge.local/fhir/StructureDefinition/match-type"
+        ) || "candidate";
+
+        const mappingStatus = getExtensionValue(
+            "https://medbridge.local/fhir/StructureDefinition/mapping-status"
+        ) || "unverified";
+
+        const validationStatus = getExtensionValue(
+            "https://medbridge.local/fhir/StructureDefinition/validation-status"
+        ) || "not_checked";
+
+        const scoreNum =
+            scoreValue !== null
+                ? parseFloat(scoreValue)
+                : 0;
+
+        const scoreStr =
+            scoreValue !== null
+                ? `${scoreNum}%`
+                : "Not available";
+
+        const term =
+            entry.code?.text ||
+            namasteCoding.display ||
+            "Not available";
+
+        let matchReason =
+            "Semantic NLP match using TF-IDF cosine similarity.";
+
+        if (matchType === "exact") {
+            matchReason =
+                "Exact term match in the standardized terminology registry.";
+        } else if (matchType === "alias") {
+            matchReason =
+                "Matched through a known regional alias or synonym.";
+        } else if (scoreNum >= 95) {
+            matchReason =
+                "High-confidence terminology candidate match.";
         }
-        
-        showGlassModal("Explainable AI (XAI) Engine", `
-            <div style="margin-bottom: 12px;"><strong>Term Mapped:</strong> ${term}</div>
-            <div style="margin-bottom: 12px;"><strong>Confidence Score:</strong> ${scoreStr}</div>
-            <div style="margin-bottom: 12px;"><strong>Match Reason:</strong> ${matchReason}</div>
-            <div><strong>Methodology:</strong> Standardized to NAMASTE and WHO ICD-11 TM2 ontologies.</div>
-        `);
+
+        showGlassModal(
+            "Explainable AI (XAI) Engine",
+            `
+                <div style="margin-bottom: 12px;">
+                    <strong>Term Mapped:</strong> ${term}
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <strong>NAMASTE Code:</strong>
+                    ${namasteCoding.code || "Not available"}
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <strong>WHO ICD-11 Code:</strong>
+                    ${icdCoding.code || "Not available"}
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <strong>Confidence Score:</strong> ${scoreStr}
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <strong>Match Type:</strong> ${matchType}
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <strong>Match Reason:</strong> ${matchReason}
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <strong>Mapping Status:</strong> ${mappingStatus}
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <strong>Validation Status:</strong> ${validationStatus}
+                </div>
+
+                <div>
+                    <strong>Methodology:</strong>
+                    Standardized to NAMASTE and WHO ICD-11 TM2 ontologies,
+                    with terminology matching and validation status tracking.
+                </div>
+            `
+        );
+
     } else {
-        showGlassModal("Explainable AI (XAI) Engine", "No AI mapping data available to explain.");
+        showGlassModal(
+            "Explainable AI (XAI) Engine",
+            "No AI mapping data available to explain."
+        );
     }
 };
 
 window.togglePatientView = function() {
     if (window.currentEntries && window.currentEntries.length > 0) {
         const entry = window.currentEntries[0].resource;
-        const condition = entry.modernEquivalent || entry.code.text;
-        
+        const codingList = entry.code?.coding || [];
+
+        const icdCoding =
+            codingList.find(
+                c => c.system === "http://id.who.int/icd/release/11/mms"
+            ) || {};
+
+        const namasteCoding =
+            codingList.find(
+                c => c.system === "https://terminology.ayush.gov.in/namaste"
+            ) || {};
+
+        const condition =
+            icdCoding.display ||
+            namasteCoding.display ||
+            entry.code?.text ||
+            "Not available";
+
         const medTwin = entry.medicineTwin || {};
         const rawUses = medTwin.traditionalUses || medTwin.traditional_uses || ["Symptom relief"];
         const uses = Array.isArray(rawUses) ? rawUses.join(", ") : rawUses;
-        
+
         const rawRisk = medTwin.riskRadar || medTwin.risk_warnings || ["Consult your physician before combining medications."];
         const risk = Array.isArray(rawRisk) ? rawRisk[0] : rawRisk;
 
@@ -710,7 +990,7 @@ window.findNearbyClinics = function(systemName) {
     navigator.geolocation.getCurrentPosition(async (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-        
+
         showToast("📡 Coordinates acquired! Searching network...", "success");
 
         try {
@@ -741,7 +1021,7 @@ window.findNearbyClinics = function(systemName) {
 };
 function renderClinicsList(clinics) {
     const modalBody = document.getElementById('clinicsModalBody');
-    
+
     if (clinics.length === 0) {
         modalBody.innerHTML = `<p class="text-muted text-center py-4">No specialized clinics found within range.</p>`;
     } else {
@@ -758,10 +1038,10 @@ function renderClinicsList(clinics) {
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <span class="small" style="color: rgba(52, 211, 153, 0.9);">System: ${c.specialties[0]}</span>
-                        
+
                         <!-- UPDATED REFER PATIENT BUTTON TO TRIGGER EMAIL -->
                         <button class="btn btn-sm btn-outline-success fw-bold py-1 px-3" style="opacity: 0.9;" onclick="sendReferralEmail('${c.name}', '${c.doctor}', '${c.distance_km}', '${c.specialties[0]}')">Refer Patient</button>
-                    
+
                     </div>
                 </div>
             `;
@@ -777,7 +1057,7 @@ function renderClinicsList(clinics) {
 // Function to trigger the backend Email API
 window.sendReferralEmail = async function(clinicName, doctorName, distance, system) {
     showToast("📧 Encrypting and sending secure referral...", "success");
-    
+
     try {
         const response = await fetch('/api/v1/send-referral', {
             method: 'POST',
@@ -791,13 +1071,13 @@ window.sendReferralEmail = async function(clinicName, doctorName, distance, syst
         });
 
         const data = await response.json();
-        
+
         if (data.status === 'success') {
             // Close the modal
             const modalEl = document.getElementById('clinicsModal');
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
             if(modalInstance) modalInstance.hide();
-            
+
             // Show massive success alert
             setTimeout(() => {
                 showToast(`✅ ABDM Referral sent to ${clinicName}! Check your email inbox.`, "success");

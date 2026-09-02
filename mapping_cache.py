@@ -366,7 +366,7 @@ def save_mapping_cache(mapping):
 
                     mapping.get("matchScore"),
                     mapping.get("matchType"),
-                    mapping.get("matchStatus"),
+                    mapping.get("matchStatus", "matched"),
 
                     mapping.get("mappingStatus"),
                     mapping.get("validationStatus"),
@@ -460,7 +460,7 @@ def save_mapping_cache(mapping):
 
                     mapping.get("matchScore"),
                     mapping.get("matchType"),
-                    mapping.get("matchStatus"),
+                    mapping.get("matchStatus", "matched"),
 
                     mapping.get("mappingStatus"),
                     mapping.get("validationStatus"),

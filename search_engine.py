@@ -6,6 +6,7 @@ from who_service import search_who_api
 from medicine_twin import get_medicine_twin_data
 from search_namaste import search_namaste
 from mapping_validator import validate_mapping
+from mapping_cache import get_cached_mapping, save_mapping_cache
 
 DB_FILE = "mappings.db"
 
@@ -175,9 +176,17 @@ def search_local_mappings(normalized_term, rows):
         else:
             continue
 
-        matched_data.append(
-            build_fhir_payload(row, confidence)
-        )
+        payload = build_fhir_payload(row, confidence)
+
+        payload["_legacySource"] = {
+            "system": row[0],
+            "traditionalTerm": row[1],
+            "namasteCode": row[2],
+            "tm2Code": row[3],
+            "aliases": row[4]
+        }
+
+        matched_data.append(payload)
 
     return matched_data
 
@@ -260,6 +269,19 @@ def search_disease(term_query, system_filter=None):
         }
 
     normalized_term = normalize_term(term_query)
+
+        # ---------------------------------------------------------
+    # 1. CHECK VALIDATED MAPPING CACHE
+    # ---------------------------------------------------------
+
+    cached_result = get_cached_mapping(normalized_term)
+
+    if cached_result:
+        return {
+            "status": "success",
+            "count": 1,
+            "data": [cached_result]
+        }
 
     if normalized_term.isdigit() or len(normalized_term) < 2:
         return {
@@ -429,6 +451,9 @@ def search_disease(term_query, system_filter=None):
                 ]
             }
 
+            if result["validationStatus"] == "validated":
+                save_mapping_cache(result)
+
             if icd11_data:
                 result["evidence"].append(
                     "WHO ICD-11 candidate found"
@@ -449,7 +474,6 @@ def search_disease(term_query, system_filter=None):
     # ---------------------------------------------------------
     # 5. TEMPORARY LEGACY FALLBACK
     # ---------------------------------------------------------
-
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
@@ -489,12 +513,90 @@ def search_disease(term_query, system_filter=None):
         )
 
         if matched_data:
+            final_results = []
+
+            for legacy in matched_data:
+                legacy_source = legacy.get("_legacySource", {})
+
+                trad_term = (
+                    legacy_source.get("traditionalTerm")
+                    or legacy.get("code", {}).get("text")
+                    or normalized_term
+                )
+
+                namaste_code = legacy_source.get("namasteCode")
+                tm2_code = legacy_source.get("tm2Code")
+                system_name = legacy_source.get("system")
+
+                modern_term = legacy.get(
+                    "modernEquivalent",
+                    "Standardized Clinical Presentation"
+                )
+
+                score = legacy.get("confidenceScore", "0%")
+
+                if isinstance(score, str):
+                    try:
+                        score = float(score.replace("%", "").strip())
+                    except ValueError:
+                        score = 0.0
+
+                result = {
+                    "inputTerm": term_query,
+                    "normalizedTerm": normalized_term,
+
+                    "traditionalTerm": {
+                        "term": trad_term,
+                        "system": system_name,
+                        "code": namaste_code
+                    },
+
+                    "namaste": {
+                        "code": namaste_code,
+                        "term": trad_term,
+                        "source": "MEDBRIDGE_LOCAL",
+                        "sourceVersion": None
+                    },
+
+                    "icd11": {
+                        "code": tm2_code,
+                        "title": modern_term,
+                        "uri": None,
+                        "source": "WHO ICD-11"
+                    } if tm2_code else None,
+
+                    "matchScore": score,
+                    "matchType": "candidate",
+
+                    "mappingStatus": (
+                        "candidate"
+                        if tm2_code
+                        else "unverified"
+                    ),
+
+                    "validationStatus": "needs_review",
+
+                    "source": "MEDBRIDGE_LOCAL",
+                    "sourceVersion": None,
+
+                    "evidence": [
+                        "Legacy local mapping used as fallback",
+                        "Mapping requires review before being considered authoritative"
+                    ],
+
+                    "medicineTwin": legacy.get(
+                        "medicineTwin",
+                        {}
+                    )
+                }
+
+                final_results.append(result)
+
             return {
                 "status": "success",
-                "count": len(matched_data),
-                "data": matched_data
+                "count": len(final_results),
+                "data": final_results
             }
-
     # ---------------------------------------------------------
     # 6. WHO FALLBACK
     # ---------------------------------------------------------
