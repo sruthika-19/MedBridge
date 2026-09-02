@@ -71,27 +71,193 @@ def extract_and_bundle_notes(doctor_paragraph: str):
                 "bundle": None
             }
 
+        # ---------------------------------------------------------
+    # FHIR PATIENT
+    # Synthetic patient for demonstration purposes
+    # ---------------------------------------------------------
+
+    patient_id = "patient-demo-001"
+
+    patient_resource = {
+        "resourceType": "Patient",
+        "id": patient_id,
+        "identifier": [
+            {
+                "system": "urn:medbridge:synthetic-patient",
+                "value": patient_id
+            }
+        ],
+        "name": [
+            {
+                "text": "Demo Patient"
+            }
+        ],
+        "gender": "unknown"
+    }
+
+    # ---------------------------------------------------------
+    # FHIR ENCOUNTER
+    # ---------------------------------------------------------
+
+    encounter_id = "encounter-demo-001"
+
+    encounter_resource = {
+        "resourceType": "Encounter",
+        "id": encounter_id,
+        "status": "finished",
+        "class": {
+            "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+            "code": "AMB",
+            "display": "ambulatory"
+        },
+        "subject": {
+            "reference": f"Patient/{patient_id}"
+        }
+    }
+
+    # ---------------------------------------------------------
+    # FHIR CONDITIONS
+    # ---------------------------------------------------------
+
     fhir_entries = []
-    
-    for term in terms:
-        if not isinstance(term, str): 
+
+    for index, term in enumerate(terms, start=1):
+
+        if not isinstance(term, str):
             continue
-            
+
         search_result = search_disease(term)
-        
-        if search_result.get("status") == "success" and search_result.get("data"):
-            best_match = search_result["data"][0]
-            
-            fhir_entries.append({
-                "fullUrl": f"urn:uuid:condition-{term.lower().replace(' ', '-')}",
-                "resource": best_match
+
+        if (
+            search_result.get("status") != "success"
+            or not search_result.get("data")
+        ):
+            continue
+
+        mapping = search_result["data"][0]
+
+        condition_id = f"condition-demo-{index}"
+
+        namaste = mapping.get("namaste") or {}
+        icd11 = mapping.get("icd11") or {}
+        traditional = mapping.get("traditionalTerm") or {}
+
+        coding = []
+
+        # -----------------------------------------------------
+        # NAMASTE coding
+        # -----------------------------------------------------
+
+        if namaste.get("code"):
+            coding.append({
+                "system": "https://terminology.ayush.gov.in/namaste",
+                "code": namaste.get("code"),
+                "display": namaste.get("term")
             })
+
+        # -----------------------------------------------------
+        # WHO ICD-11 coding
+        # -----------------------------------------------------
+
+        if icd11.get("code"):
+            coding.append({
+                "system": "http://id.who.int/icd/release/11/mms",
+                "code": icd11.get("code"),
+                "display": icd11.get("title")
+            })
+
+        condition_resource = {
+            "resourceType": "Condition",
+            "id": condition_id,
+
+            "subject": {
+                "reference": f"Patient/{patient_id}"
+            },
+
+            "encounter": {
+                "reference": f"Encounter/{encounter_id}"
+            },
+
+            "clinicalStatus": {
+                "coding": [
+                    {
+                        "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                        "code": "active",
+                        "display": "Active"
+                    }
+                ]
+            },
+
+            "code": {
+                "coding": coding,
+                "text": (
+                    traditional.get("term")
+                    or mapping.get("inputTerm")
+                )
+            },
+
+            # Keep MedBridge mapping information as extensions
+            # rather than pretending these are native FHIR fields.
+            "extension": [
+                {
+                    "url": "https://medbridge.local/fhir/StructureDefinition/match-score",
+                    "valueDecimal": float(
+                        mapping.get("matchScore", 0)
+                    )
+                },
+                {
+                    "url": "https://medbridge.local/fhir/StructureDefinition/match-type",
+                    "valueString": mapping.get(
+                        "matchType",
+                        "candidate"
+                    )
+                },
+                {
+                    "url": "https://medbridge.local/fhir/StructureDefinition/mapping-status",
+                    "valueString": mapping.get(
+                        "mappingStatus",
+                        "candidate"
+                    )
+                },
+                {
+                    "url": "https://medbridge.local/fhir/StructureDefinition/validation-status",
+                    "valueString": mapping.get(
+                        "validationStatus",
+                        "not_checked"
+                    )
+                }
+            ]
+        }
+
+        fhir_entries.append({
+            "fullUrl": f"urn:uuid:{condition_id}",
+            "resource": condition_resource
+        })
+
+    # ---------------------------------------------------------
+    # FHIR BUNDLE
+    # ---------------------------------------------------------
 
     fhir_bundle = {
         "resourceType": "Bundle",
+        "id": "medbridge-demo-bundle-001",
         "type": "collection",
-        "total": len(fhir_entries),
-        "entry": fhir_entries
+
+        "total": (
+            2 + len(fhir_entries)
+        ),
+
+        "entry": [
+            {
+                "fullUrl": f"urn:uuid:{patient_id}",
+                "resource": patient_resource
+            },
+            {
+                "fullUrl": f"urn:uuid:{encounter_id}",
+                "resource": encounter_resource
+            },
+            *fhir_entries
+        ]
     }
 
     return {
