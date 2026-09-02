@@ -445,6 +445,7 @@ const source = res.source || {};
                 <div class="mb-2"><strong style="opacity: 0.7;">Source Version:</strong> <span class="text-light">${source.version || "Not available"}</span></div>
                 <div class="mb-2"><strong style="opacity: 0.7;">Source:</strong> <span class="text-light">${source.name || "Not available"}</span></div>
                 <div class="mb-2" style="color: rgba(56, 189, 248, 0.9);"><strong>↳ NAMASTE Code:</strong> ${tradCode}</div>
+                <div class="mb-2"><strong style="opacity: 0.7;">Normalized Concept:</strong> <span class="text-light">${normalizedConcept}</span></div>
                 <div class="mb-2"><strong style="opacity: 0.7;">Modern Equivalent:</strong> <span class="text-light">${modernEq}</span></div>
                 <div class="mb-3" style="color: rgba(52, 211, 153, 0.9);"><strong>↳ WHO ICD-11 (TM2):</strong> ${icdCode}</div>
                 <div class="mb-2"><strong style="opacity: 0.7;">Validation Status:</strong> <span class="badge bg-secondary">${validationStatus}</span></div>
